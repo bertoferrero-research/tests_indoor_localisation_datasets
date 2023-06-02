@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from sklearn import preprocessing
 import matplotlib.pyplot as plt
 import math
 
@@ -44,6 +43,11 @@ test_data = pd.read_csv(test_file)
 X_train, y_train = prepare_data(train_data)
 X_test, y_test = prepare_data(test_data)
 
+#Mostramos los valores de la primera columna
+#pdTable = pd.DataFrame({'quantity acumulada':X_train.iloc(axis=1)[0]})
+#pdTable.plot(kind='box')
+#plt.show()
+
 #Construimos el modelo
 #Nos basamos en el diseño descrito en el paper "Indoor Localization using RSSI and Artificial Neural Network"
 inputlength = X_train.shape[1]
@@ -58,8 +62,8 @@ x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 output = tf.keras.layers.Dense(outputlength, activation='relu')(x) #La salida son valores positivos
 model = tf.keras.models.Model(inputs=input, outputs=output)
 
-model.compile(loss='mse', optimizer='sgd', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
-
+model.compile(loss='mse', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
+#comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
 print(model.summary())
 
 #Entrenamos
@@ -71,7 +75,7 @@ history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
 plot_learning_curves(history)
 
 # Evaluamos usando el test set
-score = model2.evaluate(X_test, y_test, verbose=0)
+score = model.evaluate(X_test, y_test, verbose=0)
 
 print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
