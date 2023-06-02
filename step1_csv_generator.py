@@ -1,21 +1,20 @@
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 import glob
 import re
 import os.path
+import math
 
 #Variables globales
-fingerprint_history_folder = './dataset/hst/set_1/'
-fingerprint_history_final_file = './fingerprint_history.csv'
-sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']
-sensors_mac = [] #Extraido de los ficheros
-regex_file_position = r"(\d+\.\d+_\d+\.\d+_\d+\.\d+)"
-sensors_header = ['timestamp', 'mac_sensor', 'mac_beacon', 'rssi']
-sensors_dtype = {'timestamp': np.float64, 'mac_sensor': str, 'mac_beacon': str, 'rssi': np.int32}
+fingerprint_history_folder = './dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
+fingerprint_history_train_file = './fingerprint_history_train.csv'                                  #Salida del csv de entrenamiento
+fingerprint_history_test_file = './fingerprint_history_test.csv'                                    #Salida del csv de tests
+test_data_rate = .2                                                                                 #Porcentaje de filas por posicion a volcar en el archivo de test
+sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
+sensors_mac = []                                                                                    #Extraido de los ficheros
+regex_file_position = r"(\d+\.\d+_\d+\.\d+_\d+\.\d+)"                                               #regex para extraer la posición del sensor del nombre del fichero
+sensors_header = ['timestamp', 'mac_sensor', 'mac_beacon', 'rssi']                                  #cabeceras de los archivos de los sensores
+sensors_dtype = {'timestamp': np.float64, 'mac_sensor': str, 'mac_beacon': str, 'rssi': np.int32}   #tipo de datos en los archivos de los sensores
 
 #Vamos a agrupar las mediciones de todos los sensores por zona de medición, extraemos para ello todos los ficheros del primer sensor, a partir de él leemos el resto
 first_sensor_files = glob.glob(fingerprint_history_folder+'sensor'+sensors_list[0]+'*.mbd')
@@ -57,5 +56,9 @@ for first_sensor_file in first_sensor_files:
             if(len(rssi) > 0):
                 data_position.at[index, sensor_mac] = rssi.iloc[0]
 
+    #determinamos el punto de corte en base al ratio de test
+    train_test_index = math.floor(len(data_position)*test_data_rate)
+
     #Escribimos en el csv de salida
-    data_position.to_csv(fingerprint_history_final_file, mode='a', header=not os.path.exists(fingerprint_history_final_file), index=False)
+    data_position[:-train_test_index].to_csv(fingerprint_history_train_file, mode='a', header=not os.path.exists(fingerprint_history_train_file), index=False)
+    data_position[-train_test_index:].to_csv(fingerprint_history_test_file , mode='a', header=not os.path.exists(fingerprint_history_test_file), index=False)
