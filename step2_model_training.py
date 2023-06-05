@@ -3,10 +3,12 @@ import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import math
+import os.path
 
 #Variables globales
-training_file = './fingerprint_history_train.csv'
-test_file = './fingerprint_history_test.csv'
+training_file = './files/fingerprint_history_train.csv'
+test_file = './files/fingerprint_history_test.csv'
+model_file = './files/model.h5'
 
 #Funciones
 #Preparamos los datos para ser introducidos en el modelo
@@ -80,3 +82,8 @@ score = model.evaluate(X_test, y_test, verbose=0)
 print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
 print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
+
+#Guardamos el modelo
+if os.path.exists(model_file):
+  os.remove(model_file)
+model.save(model_file)

@@ -7,8 +7,8 @@ import math
 
 #Variables globales
 fingerprint_history_folder = './dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_history_train_file = './fingerprint_history_train.csv'                                  #Salida del csv de entrenamiento
-fingerprint_history_test_file = './fingerprint_history_test.csv'                                    #Salida del csv de tests
+fingerprint_history_train_file = './files/fingerprint_history_train.csv'                                  #Salida del csv de entrenamiento
+fingerprint_history_test_file = './files/fingerprint_history_test.csv'                                    #Salida del csv de tests
 test_data_rate = .2                                                                                 #Porcentaje de filas por posicion a volcar en el archivo de test
 sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
 sensors_mac = []                                                                                    #Extraido de los ficheros
