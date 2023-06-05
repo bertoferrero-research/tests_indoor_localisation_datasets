@@ -23,9 +23,9 @@ def prepare_data(data):
     X = X.astype(np.float32)
     y = y.astype(np.float32)
     #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
-    nodes = X.columns
-    for node in nodes:
-      X[node+"_on"] = (X[node] > 0).astype(np.int32)
+    #nodes = X.columns
+    #for node in nodes:
+    #  X[node+"_on"] = (X[node] > 0).astype(np.int32)
 
     #Ordenamos alfabéticamente las columnas de X, asegurandonos de que todos los datasets van en el mismo orden
     X = X.reindex(sorted(X.columns), axis=1)
