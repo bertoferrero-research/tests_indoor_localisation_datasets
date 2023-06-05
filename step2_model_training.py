@@ -22,6 +22,11 @@ def prepare_data(data):
     #Convertimos a float32 para reducir complejidad
     X = X.astype(np.float32)
     y = y.astype(np.float32)
+    #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
+    nodes = X.columns
+    for node in nodes:
+      X[node+"_on"] = (X[node] > 0).astype(np.int32)
+
     #Ordenamos alfabéticamente las columnas de X, asegurandonos de que todos los datasets van en el mismo orden
     X = X.reindex(sorted(X.columns), axis=1)
     #Devolvemos
@@ -44,6 +49,8 @@ test_data = pd.read_csv(test_file)
 #Preparamos los datos
 X_train, y_train = prepare_data(train_data)
 X_test, y_test = prepare_data(test_data)
+
+print(X_train)
 
 #Mostramos los valores de la primera columna
 #pdTable = pd.DataFrame({'quantity acumulada':X_train.iloc(axis=1)[0]})
