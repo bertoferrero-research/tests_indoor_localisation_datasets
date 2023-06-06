@@ -4,10 +4,14 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import math
 import os.path
+import pickle
+from sklearn.preprocessing import StandardScaler
 
 #Variables globales
 training_file = './files/fingerprint_history_train.csv'
 test_file = './files/fingerprint_history_test.csv'
+scaler_file = './files/scaler.pkl'
+scaler_output_file = './files/scaler_output.pkl'
 model_file = './files/model.h5'
 
 #Funciones
@@ -17,11 +21,11 @@ def prepare_data(data):
     y = data.iloc[:, 1:4]
     X = data.iloc[:, 4:]
     #Normalizamos los rssi a valores positivos de 0 a 1
-    X += 100
-    X /= 100
+    #X += 100
+    #X /= 100
     #Convertimos a float32 para reducir complejidad
-    X = X.astype(np.float32)
-    y = y.astype(np.float32)
+    #X = X.astype(np.float32)
+    #y = y.astype(np.float32)
     #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
     #nodes = X.columns
     #for node in nodes:
@@ -50,7 +54,18 @@ test_data = pd.read_csv(test_file)
 X_train, y_train = prepare_data(train_data)
 X_test, y_test = prepare_data(test_data)
 
+#Escalamos
+scaler = StandardScaler()
+scaler.fit(X_train)
+with open(scaler_file, 'wb') as scalerFile:
+  pickle.dump(scaler, scalerFile)
+  scalerFile.close()
+
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+
 print(X_train)
+print(y_train)
 
 #Mostramos los valores de la primera columna
 #pdTable = pd.DataFrame({'quantity acumulada':X_train.iloc(axis=1)[0]})
@@ -68,7 +83,9 @@ print("Tamaño de la capa oculta: "+str(hiddenLayerLength))
 
 input = tf.keras.layers.Input(shape=inputlength)
 x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-output = tf.keras.layers.Dense(outputlength, activation='relu')(x) #La salida son valores positivos
+x = tf.keras.layers.Dropout(0.2)(x)
+x = tf.keras.layers.Dense(outputlength, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.2))(x) #La salida son valores positivos
+output = tf.keras.layers.Dropout(0.2)(x)
 model = tf.keras.models.Model(inputs=input, outputs=output)
 
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
