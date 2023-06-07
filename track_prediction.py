@@ -7,11 +7,13 @@ import os.path
 import pickle
 
 #Variables globales
-script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-track_file = script_dir+'/../../dataset_processed_csv/track_straight_01_all_sensors.mbd_v2.csv'
-output_file = script_dir+'/../../dataset_processed_csv/prediction_output.csv'
-scaler_file = script_dir+'/files/scaler.pkl'
-model_file = script_dir+'/files/model.h5'
+input_file_name = 'track_straight_01_all_sensors.mbd_v2'
+model = 'cnn'
+track_file = './dataset_processed_csv/'+input_file_name+'.csv'
+output_file = './prediction_output/'+model+'_'+input_file_name+'.csv'
+model_dir = './models/'+model
+scaler_file = model_dir+'/files/scaler.pkl'
+model_file = model_dir+'/files/model.h5'
 
 #Funciones
 #Preparamos los datos para ser introducidos en el modelo
@@ -48,6 +50,10 @@ with open(scaler_file, 'rb') as scalerFile:
   scaler = pickle.load(scalerFile)
   scalerFile.close()
 input_data = scaler.transform(input_data)
+
+#Si el modelo es cnn, tenemos que darle una forma especial
+if model == 'cnn':
+  input_data = input_data.reshape(input_data.shape[0], input_data.shape[1], 1)
 
 #Predecimos
 predictions = model.predict(input_data)
