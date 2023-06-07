@@ -6,11 +6,12 @@ import os.path
 import math
 
 #Variables globales
-fingerprint_track_folder = './dataset/trk/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_track_file = 'straight_01_all_sensors.mbd'                     #Fichero a extraer
-fingerprint_track_output = './files/track_'+fingerprint_track_file+'_v2.csv'                   #Salida del csv de entrenamiento
-time_grouping_timestamp_difference = 0.02                                                   #Al comprobar la diferencia de tiempos, en cuanto haya una diferencia de mas de este valor se cerrará el grupo anterior
-sensors_mac = []                                                                            #Extraido de los ficheros
+script_dir = os.path.dirname(os.path.abspath(__file__))                                                                  #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+fingerprint_track_folder = script_dir+'/dataset/trk/'                                                                    #Ruta donde se encuentran los históricos originales
+fingerprint_track_file = 'straight_01_all_sensors.mbd'                                                                   #Fichero a extraer
+fingerprint_track_output = script_dir+'/dataset_processed_csv/track_'+fingerprint_track_file+'_v2.csv'                   #Salida del csv de entrenamiento
+time_grouping_timestamp_difference = 0.02                                                                                #Al comprobar la diferencia de tiempos, en cuanto haya una diferencia de mas de este valor se cerrará el grupo anterior
+sensors_mac = []                                                                                                         #Extraido de los ficheros
 #cabeceras de los archivos de los sensores
 sensors_header = ['timestamp', 'mac_sensor', 'mac_beacon', 'rssi', 'pos_x', 'pos_y', 'pos_z', 'aruco_pos_1', 'aruco_pos_2', 'aruco_pos_3', 'aruco_pos_4', 'aruco_pos_5', 'aruco_pos_6', 'aruco_pos_7', 'aruco_pos_8', 'aruco_pos_9'] 
 #tipo de datos en los archivos de los sensores

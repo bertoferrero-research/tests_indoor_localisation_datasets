@@ -7,11 +7,11 @@ import os.path
 import pickle
 
 #Variables globales
-track_file = './files/track_straight_01_all_sensors.mbd_v2.csv'
-output_file = './files/prediction_output.csv'
-scaler_file = './files/scaler.pkl'
-scaler_output_file = './files/scaler_output.pkl'
-model_file = './files/model.h5'
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+track_file = script_dir+'/../../dataset_processed_csv/track_straight_01_all_sensors.mbd_v2.csv'
+output_file = script_dir+'/../../dataset_processed_csv/prediction_output.csv'
+scaler_file = script_dir+'/files/scaler.pkl'
+model_file = script_dir+'/files/model.h5'
 
 #Funciones
 #Preparamos los datos para ser introducidos en el modelo

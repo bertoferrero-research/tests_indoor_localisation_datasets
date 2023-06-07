@@ -8,11 +8,11 @@ import pickle
 from sklearn.preprocessing import StandardScaler
 
 #Variables globales
-training_file = './files/fingerprint_history_train.csv'
-test_file = './files/fingerprint_history_test.csv'
-scaler_file = './files/scaler.pkl'
-scaler_output_file = './files/scaler_output.pkl'
-model_file = './files/model.h5'
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test.csv'
+scaler_file = script_dir+'/files/scaler.pkl'
+model_file = script_dir+'/files/model.h5'
 
 #Funciones
 #Preparamos los datos para ser introducidos en el modelo

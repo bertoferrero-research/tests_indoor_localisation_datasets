@@ -6,15 +6,32 @@ import os.path
 import math
 
 #Variables globales
-fingerprint_history_folder = './dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_history_train_file = './files/fingerprint_history_train.csv'                                  #Salida del csv de entrenamiento
-fingerprint_history_test_file = './files/fingerprint_history_test.csv'                                    #Salida del csv de tests
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+fingerprint_history_folder = script_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
+fingerprint_history_train_file = script_dir+'/dataset_processed_csv/fingerprint_history_train.csv'                                  #Salida del csv de entrenamiento
+fingerprint_history_test_file = script_dir+'/dataset_processed_csv/fingerprint_history_test.csv'                                    #Salida del csv de tests
+time_grouping_timestamp_difference = 0.02                                                   #Al comprobar la diferencia de tiempos, en cuanto haya una diferencia de mas de este valor se cerrará el grupo anterior
 test_data_rate = .2                                                                                 #Porcentaje de filas por posicion a volcar en el archivo de test
 sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
 sensors_mac = []                                                                                    #Extraido de los ficheros
 regex_file_position = r"(\d+\.\d+_\d+\.\d+_\d+\.\d+)"                                               #regex para extraer la posición del sensor del nombre del fichero
 sensors_header = ['timestamp', 'mac_sensor', 'mac_beacon', 'rssi']                                  #cabeceras de los archivos de los sensores
 sensors_dtype = {'timestamp': np.float64, 'mac_sensor': str, 'mac_beacon': str, 'rssi': np.int32}   #tipo de datos en los archivos de los sensores
+
+#Función encargada de cerrar el grupo del segmento sobre la lista final
+def close_time_group(data_segment, final_list, sensors_mac):
+    subdata = {}
+    subdata['timestamp'] = data_segment['timestamp'].mean()
+    #Añadimos cada mac
+    for mac in sensors_mac:
+        macrssi = data_segment[(data_segment['mac_sensor']==mac)]
+        if(len(macrssi) > 0):
+            subdata[mac] = round(macrssi['rssi'].mean())
+        else:
+            subdata[mac] = -200
+
+    #Volcamos sobre el dataframe final
+    final_list.append(subdata)
 
 #Vamos a agrupar las mediciones de todos los sensores por zona de medición, extraemos para ello todos los ficheros del primer sensor, a partir de él leemos el resto
 first_sensor_files = glob.glob(fingerprint_history_folder+'sensor'+sensors_list[0]+'*.mbd')
@@ -30,31 +47,37 @@ for first_sensor_file in first_sensor_files:
         sensor_file = fingerprint_history_folder+'sensor'+sensor+'_'+zone+'.mbd'
         #print(sensor_file)
         data = pd.concat([data, pd.read_csv(sensor_file, sep=',', names=sensors_header, dtype=sensors_dtype)])
+
+    data = data.sort_values(by=['timestamp']).reset_index()
+    print(data)
     
     if(len(sensors_mac) == 0):
         sensors_mac = data['mac_sensor'].unique()
-
-    #Redondeamos el timestamp a 0 decimales
-    data['timestamp'] = data['timestamp'].round(0) #TODO probar a redondear a 1 decimal o 2
-    #Agrupamos por timestamp y mac_sensor, si hay mas de un resultado de mac_sensor, nos quedamos con el valor medio de rssi
-    data = data.groupby(['timestamp', 'mac_sensor']).mean(numeric_only=True).reset_index()
-
-    ##Ya tenemos un conjunto de datos con un rssi por sensor y timestamp. Ahora necesitamos rellenar un dataframe con los datos en donde aparezca un sensor por columna
     #De la zona extraemos las posiciones x, y y z
+
+    #Recorremos las filas para agrupar por espacio temporal
+    initial_index = 0
+    final_list = []
+    for index, row in data.iterrows():
+        #Comprobamos si debemos de cerrar el grupo
+        timestamp_diff = row['timestamp']-data['timestamp'][initial_index]
+        if timestamp_diff > time_grouping_timestamp_difference:
+            #Extraemos el segmento
+            data_segment = data[initial_index:index]
+            #Cerramos el grupo sobre el dataframe final
+            close_time_group(data_segment, final_list, sensors_mac)
+            initial_index = index
+
+    #Procesamos el ultimo grupo
+    data_segment = data[initial_index:]
+    close_time_group(data_segment, final_list, sensors_mac) 
+    data_position = pd.DataFrame(final_list)
+    
+    #Añadimos las posiciones
     pos_x, pos_y, pos_z = zone.split('_')
-    #Creamos un dataframe con todos los timestamps
-    timestamps = data['timestamp'].unique()
-    data_position_list = []
-    for timestamp in timestamps:
-        data_position_row = {'timestamp': timestamp, 'pos_x': pos_x, 'pos_y': pos_y, 'pos_z': pos_z}
-        for sensor_mac in sensors_mac:
-            rssi = data[(data['timestamp'] == timestamp) & (data['mac_sensor'] == sensor_mac)]['rssi']
-            if(len(rssi) > 0):
-                data_position_row[sensor_mac] = round(rssi.iloc[0], 0)
-            else:
-                data_position_row[sensor_mac] = -200
-        data_position_list.append(data_position_row)    
-    data_position = pd.DataFrame(data_position_list)
+    data_position.insert(1, 'pos_x', pos_x)
+    data_position.insert(2, 'pos_y', pos_y)
+    data_position.insert(3, 'pos_z', pos_z)
 
     #determinamos el punto de corte en base al ratio de test
     train_test_index = math.floor(len(data_position)*test_data_rate)
