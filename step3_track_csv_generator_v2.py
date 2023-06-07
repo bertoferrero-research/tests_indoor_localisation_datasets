@@ -7,7 +7,7 @@ import math
 
 #Variables globales
 fingerprint_track_folder = './dataset/trk/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_track_file = 'rectangular_with_rotation_all_sensors.mbd'                     #Fichero a extraer
+fingerprint_track_file = 'straight_01_all_sensors.mbd'                     #Fichero a extraer
 fingerprint_track_output = './files/track_'+fingerprint_track_file+'_v2.csv'                   #Salida del csv de entrenamiento
 time_grouping_timestamp_difference = 0.02                                                   #Al comprobar la diferencia de tiempos, en cuanto haya una diferencia de mas de este valor se cerrará el grupo anterior
 sensors_mac = []                                                                            #Extraido de los ficheros
@@ -28,9 +28,9 @@ def close_time_group(data_segment, final_list, sensors_mac):
     for mac in sensors_mac:
         macrssi = data_segment[(data_segment['mac_sensor']==mac)]
         if(len(macrssi) > 0):
-            subdata[mac] = macrssi['rssi'].mean()
+            subdata[mac] = round(macrssi['rssi'].mean())
         else:
-            subdata[mac] = -100
+            subdata[mac] = -200
 
     #Volcamos sobre el dataframe final
     final_list.append(subdata)

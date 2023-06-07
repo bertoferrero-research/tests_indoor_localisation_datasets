@@ -44,17 +44,17 @@ for first_sensor_file in first_sensor_files:
     pos_x, pos_y, pos_z = zone.split('_')
     #Creamos un dataframe con todos los timestamps
     timestamps = data['timestamp'].unique()
-    data_position = pd.DataFrame({'timestamp': timestamps, 'pos_x': pos_x, 'pos_y': pos_y, 'pos_z': pos_z})
-    #Añadimos una columna por cada sensor
-    for sensor_mac in sensors_mac:
-        data_position[sensor_mac] = -100 #RSSI mínimo, aunque el minimo segun wikipedia es -80 hay en los datos valores inferiores a este
-    #Rellenamos los valores de rssi para cada sensor
-    for index, row in data_position.iterrows():
-        timestamp = row['timestamp']
+    data_position_list = []
+    for timestamp in timestamps:
+        data_position_row = {'timestamp': timestamp, 'pos_x': pos_x, 'pos_y': pos_y, 'pos_z': pos_z}
         for sensor_mac in sensors_mac:
             rssi = data[(data['timestamp'] == timestamp) & (data['mac_sensor'] == sensor_mac)]['rssi']
             if(len(rssi) > 0):
-                data_position.at[index, sensor_mac] = rssi.iloc[0]
+                data_position_row[sensor_mac] = round(rssi.iloc[0], 0)
+            else:
+                data_position_row[sensor_mac] = -200
+        data_position_list.append(data_position_row)    
+    data_position = pd.DataFrame(data_position_list)
 
     #determinamos el punto de corte en base al ratio de test
     train_test_index = math.floor(len(data_position)*test_data_rate)

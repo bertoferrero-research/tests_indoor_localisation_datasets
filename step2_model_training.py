@@ -24,8 +24,8 @@ def prepare_data(data):
     #X += 100
     #X /= 100
     #Convertimos a float32 para reducir complejidad
-    #X = X.astype(np.float32)
-    #y = y.astype(np.float32)
+    X = X.astype(np.int32)
+    y = y.round(4).astype(np.float32)
     #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
     #nodes = X.columns
     #for node in nodes:
@@ -82,23 +82,25 @@ print("Tamaño de la salida: "+str(outputlength))
 print("Tamaño de la capa oculta: "+str(hiddenLayerLength))
 
 input = tf.keras.layers.Input(shape=inputlength)
+#x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-x = tf.keras.layers.Dropout(0.2)(x)
-x = tf.keras.layers.Dense(outputlength, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.2))(x) #La salida son valores positivos
-output = tf.keras.layers.Dropout(0.2)(x)
+#x = tf.keras.layers.Dropout(0.2)(x)
+output = tf.keras.layers.Dense(outputlength, activation='relu')(x) #La salida son valores positivos
+#output = tf.keras.layers.Dropout(0.2)(x)
 model = tf.keras.models.Model(inputs=input, outputs=output)
 
-model.compile(loss='mse', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
+model.compile(loss='mae', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
 #comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
+#Seguir luchando por bajar el accuracy en regresion no es buena idea https://stats.stackexchange.com/questions/352036/why-is-accuracy-not-a-good-measure-for-regression-models
 print(model.summary())
 
 #Entrenamos
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                     batch_size=  32,
-                     epochs=  25, 
+                     batch_size=  1000,
+                     epochs=  100, 
                      verbose=1)
 
-plot_learning_curves(history)
+#plot_learning_curves(history)
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
@@ -106,6 +108,17 @@ score = model.evaluate(X_test, y_test, verbose=0)
 print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
 print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
+
+#Intentamos estimar los puntos de test
+print('Estimación de puntos de test:')
+X_test_sample = X_train[:2]
+y_test_sample = y_train[:2]
+y_pred = pd.DataFrame(model.predict(X_test_sample), columns=['pos_x', 'pos_y', 'pos_z'])
+print(y_pred)
+print(y_test_sample)
+plt.plot(y_test_sample['pos_y'].values, y_test_sample['pos_x'].values, 'go-', label='Real', linewidth=1)
+plt.plot(y_pred['pos_y'].values, y_pred['pos_x'].values, 'ro-', label='Calculada', linewidth=1)
+plt.show()
 
 #Guardamos el modelo
 if os.path.exists(model_file):

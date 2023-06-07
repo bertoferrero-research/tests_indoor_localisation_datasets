@@ -7,7 +7,7 @@ import os.path
 import pickle
 
 #Variables globales
-track_file = './files/track_rectangular_with_rotation_all_sensors.mbd_v2.csv'
+track_file = './files/track_straight_01_all_sensors.mbd_v2.csv'
 output_file = './files/prediction_output.csv'
 scaler_file = './files/scaler.pkl'
 scaler_output_file = './files/scaler_output.pkl'
@@ -23,8 +23,8 @@ def prepare_data(data):
     #X += 100
     #X /= 100
     #Convertimos a float32 para reducir complejidad
-    #X = X.astype(np.float32)
-    #y = y.astype(np.float32)
+    X = X.astype(np.int32)
+    y = y.round(4).astype(np.float32)
     #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
     #nodes = X.columns
     #for node in nodes:
