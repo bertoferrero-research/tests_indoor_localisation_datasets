@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 
 #region Carga de datos
-def load_training_data(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False):
+def load_training_data(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False):
     #Cargamos los ficheros
     train_data = pd.read_csv(training_file)
     test_data = pd.read_csv(test_file)
@@ -22,8 +22,17 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
             pickle.dump(scaler, scalerFile)
             scalerFile.close()
 
-        X_train = scaler.transform(X_train)
-        X_test = scaler.transform(X_test)
+        X_train_scaled = X_train.copy()        
+        X_train_scaled[X_train.columns] = scaler.transform(X_train)
+        X_train = X_train_scaled
+        X_test_scaled = X_test.copy()        
+        X_test_scaled[X_test.columns] = scaler.transform(X_test)
+        X_test = X_test_scaled
+
+    #Agrupamos los valores de X en un mapa 2D
+    if group_x_2dmap:
+        X_train = group_rssi_2dmap(X_train)
+        X_test = group_rssi_2dmap(X_test)
 
     #Devolvemos
     return X_train, y_train, X_test, y_test
@@ -38,11 +47,43 @@ def prepare_training_data(data, include_pos_z: bool=True, scale_y: bool=False):
     #Convertimos a float32 e in32 para reducir complejidad
     y = y.astype(np.float32)
     X = X.astype(np.int32)
+    #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
+    #nodes = X.columns
+    #for node in nodes:
+    #  X[node+"_on"] = (X[node] > 0).astype(np.int32)
 
     #Ordenamos alfabéticamente las columnas de X, asegurandonos de que todos los datasets van en el mismo orden
     X = X.reindex(sorted(X.columns), axis=1)
     #Devolvemos
     return X,y
+
+def group_rssi_2dmap(data: pd.DataFrame, default_empty_value: int=-10):
+    #Definimos el array de la matriz a extrapolar, sacada de los mapas del dataset
+    #  0  12  21  0
+    #  11 10  20  22
+    #  42 40  30  31
+    #  0  41  32  0
+    rssi_map = [
+        [None, '000000000102', '000000000201', None],
+        ['000000000101', 'b827eb4521b4', 'b827eb917e19', '000000000202'],
+        ['000000000402', 'b827ebfd7811', 'b827ebf7d096', '000000000301'],
+        [None, '000000000401', '000000000302', None]
+    ]
+    final_data = []
+    #Por cada fila del dataset creamos un array con los valores de rssi en el mismo índice que la matriz rssi_map
+    for index, row in data.iterrows():
+        rssi = np.ndarray((len(rssi_map), len(rssi_map[0])))
+        for i in range(len(rssi_map)):
+            rssi_map_row = rssi_map[i]
+            for j in range(len(rssi_map_row)):
+                rssi_map_col = rssi_map_row[j]
+                rssi_value = default_empty_value
+                if rssi_map_col is not None:
+                    rssi_value = row[rssi_map_col]
+                rssi[i][j] = rssi_value
+        final_data.append(rssi)
+    #Devolvemos
+    return np.array(final_data)
 #endregion
 
 #region escalado de datos
@@ -97,9 +138,10 @@ def scale_dataframe(data: pd.DataFrame):
     Returns:
         pd.DataFrame: dataframe escalado
     """
-    data['pos_x'] = scale_pos_x(data['pos_x'])
-    data['pos_y'] = scale_pos_y(data['pos_y'])
-    return data
+    data_scaled = data.copy()
+    data_scaled['pos_x'] = scale_pos_x(data['pos_x'])
+    data_scaled['pos_y'] = scale_pos_y(data['pos_y'])
+    return data_scaled
 
 def descale_pos_x(pos_x: pd.Series):
     """
@@ -131,9 +173,10 @@ def descale_dataframe(data: pd.DataFrame):
     Returns:
         pd.DataFrame: dataframe desescalado
     """
-    data['pos_x'] = descale_pos_x(data['pos_x'])
-    data['pos_y'] = descale_pos_y(data['pos_y'])
-    return data
+    data_scaled = data.copy()
+    data_scaled['pos_x'] = descale_pos_x(data['pos_x'])
+    data_scaled['pos_y'] = descale_pos_y(data['pos_y'])
+    return data_scaled
 
 #endregion
 

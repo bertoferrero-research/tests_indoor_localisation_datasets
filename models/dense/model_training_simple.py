@@ -17,7 +17,6 @@ from lib.trainingcommon import descale_dataframe
 
 #Version simplificada:
 #Solo X e Y como salida
-#Solo los 1000 primeros registros de entrenamiento mezclados
 #X e Y esacalados de 0 a 1 con minmax
 
 #Variables globales
@@ -31,9 +30,6 @@ model_file = script_dir+'/files/model.h5'
 #Cargamos los ficheros
 X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True)
 
-#Nos quedamos con los 1000 primeros registros
-X_train = X_train[:1000]
-y_train = y_train[:1000]
 
 print(X_train)
 print(y_train)
@@ -84,7 +80,9 @@ print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 print('Estimación de puntos de test:')
 X_test_sample = X_train[:100]
 y_test_sample = y_train[:100]
-y_pred = pd.DataFrame(model.predict(X_test_sample), columns=['pos_x', 'pos_y'])
+prediction = model.predict(X_test_sample)
+print(prediction)
+y_pred = pd.DataFrame(prediction, columns=['pos_x', 'pos_y'])
 #Desescalamos
 y_test_sample = descale_dataframe(y_test_sample)
 y_pred = descale_dataframe(y_pred)

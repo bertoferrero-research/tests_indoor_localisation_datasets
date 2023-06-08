@@ -8,36 +8,36 @@ import pickle
 import sys
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 sys.path.insert(1, script_dir+'/../../')
 from lib.trainingcommon import prepare_training_data
 from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_dataframe
+from lib.trainingcommon import group_rssi_2dmap
 
 #Variables globales
 training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train.csv'
 test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
-scaler_output_file = script_dir+'/files/scaler_output.pkl'
 model_file = script_dir+'/files/model.h5'
 
 #Cargamos los ficheros
-X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True)
-print(X_train)
-print(y_train)
+X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True, True)
+
+#Convertimos los 12 valores rssi en de cada registro en una matriz de 4x4 dejando los vertices a -200
+#TODO hacer el array segun un mapa de orden. Tras el analisis de los sensores estos se disponen:
+print(X_train.shape)
+print(X_train[0])
+
 
 #Creamos el modelo
 model = Sequential()
-model.add(Conv1D(32, 3, activation='relu', input_shape=(X_train.shape[1], 1)))
-model.add(MaxPooling1D(2))
-model.add(Conv1D(64, 2, activation='relu'))
-model.add(MaxPooling1D(2))
-model.add(Conv1D(128, 2, activation='relu'))
-model.add(MaxPooling1D(1))
+model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(X_train.shape[1], X_train.shape[2], 1)))
+model.add(MaxPooling2D((2, 2)))
 model.add(Flatten())
-model.add(Dense(256, activation='relu'))
+model.add(Dense(256, activation='relu', kernel_regularizer=tf.keras.regularizers.l1(0.05)))
 model.add(Dense(y_train.shape[1], activation='sigmoid'))  # 3 salidas para las coordenadas (x, y, z)
 
 # Compilar el modelo
@@ -47,8 +47,8 @@ model.compile(loss='mse', optimizer='RMSProp', metrics=['accuracy','mse','mae'] 
 model.summary()
 
 #Entrenamos
-X_train = X_train.values.reshape(X_train.shape[0], X_train.shape[1], 1)
-X_test = X_test.values.reshape(X_test.shape[0], X_test.shape[1], 1)
+X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2],  1)
+X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2], 1)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  1000,
                      epochs=  25, 
@@ -65,8 +65,8 @@ print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
 #Intentamos estimar los puntos de test
 print('Estimación de puntos de test:')
-X_test_sample = X_train[:100]
-y_test_sample = y_train[:100]
+X_test_sample = X_train[:5000]
+y_test_sample = y_train[:5000]
 y_pred = pd.DataFrame(model.predict(X_test_sample), columns=['pos_x', 'pos_y'])
 #Desescalamos
 y_test_sample = descale_dataframe(y_test_sample)
