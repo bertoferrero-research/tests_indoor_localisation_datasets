@@ -5,53 +5,70 @@ import matplotlib.pyplot as plt
 import math
 import os.path
 import pickle
+from sklearn.preprocessing import StandardScaler
 import sys
-from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 sys.path.insert(1, script_dir+'/../../')
 from lib.trainingcommon import prepare_training_data
 from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
+from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_dataframe
 
+#Version simplificada:
+#Solo X e Y como salida
+#Solo los 1000 primeros registros de entrenamiento mezclados
+#X e Y esacalados de 0 a 1 con minmax
+
 #Variables globales
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train.csv'
 test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
-scaler_output_file = script_dir+'/files/scaler_output.pkl'
 model_file = script_dir+'/files/model.h5'
+
 
 #Cargamos los ficheros
 X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True)
+
+#Nos quedamos con los 1000 primeros registros
+X_train = X_train[:1000]
+y_train = y_train[:1000]
+
 print(X_train)
 print(y_train)
 
-#Creamos el modelo
-model = Sequential()
-model.add(Conv1D(32, 3, activation='relu', input_shape=(X_train.shape[1], 1)))
-model.add(MaxPooling1D(2))
-model.add(Conv1D(64, 2, activation='relu'))
-model.add(MaxPooling1D(2))
-model.add(Conv1D(128, 2, activation='relu'))
-model.add(MaxPooling1D(1))
-model.add(Flatten())
-model.add(Dense(256, activation='relu'))
-model.add(Dense(y_train.shape[1], activation='sigmoid'))  # 3 salidas para las coordenadas (x, y, z)
+#Mostramos los valores de la primera columna
+#pdTable = pd.DataFrame({'quantity acumulada':X_train.iloc(axis=1)[0]})
+#pdTable.plot(kind='box')
+#plt.show()
 
-# Compilar el modelo
-model.compile(loss='mse', optimizer='RMSProp', metrics=['accuracy','mse','mae'] )
+#Construimos el modelo
+#Nos basamos en el diseño descrito en el paper "Indoor Localization using RSSI and Artificial Neural Network"
+inputlength = X_train.shape[1]
+outputlength = y_train.shape[1]
+hiddenLayerLength = round(inputlength*2/3+outputlength, 0)
+print("Tamaño de la entrada: "+str(inputlength))
+print("Tamaño de la salida: "+str(outputlength))
+print("Tamaño de la capa oculta: "+str(hiddenLayerLength))
 
-# Resumen del modelo
-model.summary()
+input = tf.keras.layers.Input(shape=inputlength)
+#x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
+x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
+#x = tf.keras.layers.Dropout(0.2)(x)
+output = tf.keras.layers.Dense(outputlength, activation='sigmoid')(x)
+#output = tf.keras.layers.Dropout(0.2)(x)
+model = tf.keras.models.Model(inputs=input, outputs=output)
+
+model.compile(loss='mae', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
+#comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
+#Seguir luchando por bajar el accuracy en regresion no es buena idea https://stats.stackexchange.com/questions/352036/why-is-accuracy-not-a-good-measure-for-regression-models
+print(model.summary())
 
 #Entrenamos
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
-X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  1000,
-                     epochs=  25, 
+                     epochs=  100, 
                      verbose=1)
 
 #plot_learning_curves(history)
