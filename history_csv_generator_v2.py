@@ -72,6 +72,13 @@ for first_sensor_file in first_sensor_files:
     data_segment = data[initial_index:]
     close_time_group(data_segment, final_list, sensors_mac) 
     data_position = pd.DataFrame(final_list)
+
+    #Por cada sensor mac, extraemos las que no tienen valor -200, calculamos la media y reemplazamos los -200 por este valor
+    for mac in sensors_mac:
+        macrssi = data_position[(data_position[mac]!=-200)]
+        if(len(macrssi) > 0):
+            macrssi_mean = round(macrssi[mac].mean())
+            data_position[mac] = data_position[mac].replace(-200, macrssi_mean)
     
     #Añadimos las posiciones
     pos_x, pos_y, pos_z = zone.split('_')
