@@ -8,8 +8,8 @@ import math
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 fingerprint_history_folder = script_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_history_train_file = script_dir+'/dataset_processed_csv/fingerprint_history_train.csv'                                  #Salida del csv de entrenamiento
-fingerprint_history_test_file = script_dir+'/dataset_processed_csv/fingerprint_history_test.csv'                                    #Salida del csv de tests
+fingerprint_history_train_file = script_dir+'/dataset_processed_csv/fingerprint_history_train_v2.csv'                                  #Salida del csv de entrenamiento
+fingerprint_history_test_file = script_dir+'/dataset_processed_csv/fingerprint_history_test_v2.csv'                                    #Salida del csv de tests
 time_grouping_timestamp_difference = 0.02                                                   #Al comprobar la diferencia de tiempos, en cuanto haya una diferencia de mas de este valor se cerrará el grupo anterior
 test_data_rate = .2                                                                                 #Porcentaje de filas por posicion a volcar en el archivo de test
 sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
