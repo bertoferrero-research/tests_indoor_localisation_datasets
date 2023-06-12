@@ -9,7 +9,6 @@ from sklearn.preprocessing import StandardScaler
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 sys.path.insert(1, script_dir+'/../../')
-from lib.trainingcommon import prepare_training_data
 from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_pos_x
@@ -78,8 +77,8 @@ print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
 #Intentamos estimar los puntos de test
 print('Estimación de puntos de test:')
-X_test_sample = X_train[:100]
-y_test_sample = y_train[:100]
+X_test_sample = X_train[:5000]
+y_test_sample = y_train[:5000]
 prediction = model.predict(X_test_sample)
 print(prediction)
 y_pred = pd.DataFrame(prediction, columns=['pos_x', 'pos_y'])

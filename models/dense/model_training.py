@@ -111,8 +111,8 @@ print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
 #Intentamos estimar los puntos de test
 print('Estimación de puntos de test:')
-X_test_sample = X_train[:2]
-y_test_sample = y_train[:2]
+X_test_sample = X_train[:5000]
+y_test_sample = y_train[:5000]
 y_pred = pd.DataFrame(model.predict(X_test_sample), columns=['pos_x', 'pos_y', 'pos_z'])
 print(y_pred)
 print(y_test_sample)

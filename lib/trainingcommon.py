@@ -11,8 +11,8 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
     test_data = pd.read_csv(test_file)
 
     #Preparamos los datos
-    X_train, y_train = prepare_training_data(train_data, include_pos_z, scale_y)
-    X_test, y_test = prepare_training_data(test_data, include_pos_z, scale_y)
+    X_train, y_train = prepare_data(train_data, include_pos_z, scale_y)
+    X_test, y_test = prepare_data(test_data, include_pos_z, scale_y)
 
     #Escalamos
     if scaler_file is not None:
@@ -37,7 +37,27 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
     #Devolvemos
     return X_train, y_train, X_test, y_test
 
-def prepare_training_data(data, include_pos_z: bool=True, scale_y: bool=False):
+def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False):
+    #Cargamos el fichero
+    track_data = pd.read_csv(track_file)
+
+    #Preparamos los datos
+    X, y = prepare_data(track_data, include_pos_z, scale_y)
+
+    #Escalamos
+    if scaler_file is not None:
+        with open(scaler_file, 'rb') as scalerFile:
+            scaler = pickle.load(scalerFile)
+            scalerFile.close()
+
+        X_scaled = X.copy()        
+        X_scaled[X.columns] = scaler.transform(X)
+        X = X_scaled   
+
+    #Devolvemos
+    return X, y
+
+def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False):
     #Extraemos cada parte
     y = data.iloc[:, 1:(4 if include_pos_z else 3)]
     X = data.iloc[:, 4:]
@@ -57,7 +77,8 @@ def prepare_training_data(data, include_pos_z: bool=True, scale_y: bool=False):
     #Devolvemos
     return X,y
 
-def group_rssi_2dmap(data: pd.DataFrame, default_empty_value: int=-10):
+
+def group_rssi_2dmap(data: pd.DataFrame, default_empty_value: int=-200):
     #Definimos el array de la matriz a extrapolar, sacada de los mapas del dataset
     #  0  12  21  0
     #  11 10  20  22

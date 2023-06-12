@@ -11,7 +11,6 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 sys.path.insert(1, script_dir+'/../../')
-from lib.trainingcommon import prepare_training_data
 from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_dataframe
@@ -37,7 +36,7 @@ model = Sequential()
 model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(X_train.shape[1], X_train.shape[2], 1)))
 model.add(MaxPooling2D((2, 2)))
 model.add(Flatten())
-model.add(Dense(256, activation='relu', kernel_regularizer=tf.keras.regularizers.l1(0.05)))
+model.add(Dense(256, activation='relu'))
 model.add(Dense(y_train.shape[1], activation='sigmoid'))  # 3 salidas para las coordenadas (x, y, z)
 
 # Compilar el modelo
