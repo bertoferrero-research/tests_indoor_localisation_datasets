@@ -23,7 +23,9 @@ scaler_output_file = script_dir+'/files/scaler_output.pkl'
 model_file = script_dir+'/files/model.h5'
 
 #Cargamos los ficheros
-X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True)
+print("Cargando datos")
+X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True, False, True)
+print("Carga de datos limpios")
 print(X_train)
 print(y_train)
 
@@ -37,7 +39,7 @@ model.add(Conv1D(128, 2, activation='relu'))
 model.add(MaxPooling1D(1))
 model.add(Flatten())
 model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.2))
+#model.add(Dropout(0.2))
 model.add(Dense(y_train.shape[1], activation='sigmoid'))  # 3 salidas para las coordenadas (x, y, z)
 
 # Compilar el modelo
@@ -50,11 +52,11 @@ model.summary()
 X_train = X_train.values.reshape(X_train.shape[0], X_train.shape[1], 1)
 X_test = X_test.values.reshape(X_test.shape[0], X_test.shape[1], 1)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                     batch_size=  1000,
-                     epochs=  25, 
+                     batch_size=  1500,
+                     epochs=  12, 
                      verbose=1)
 
-#plot_learning_curves(history)
+plot_learning_curves(history)
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
@@ -65,8 +67,8 @@ print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
 #Intentamos estimar los puntos de test
 print('Estimación de puntos de test:')
-X_test_sample = X_train[:5000]
-y_test_sample = y_train[:5000]
+X_test_sample = X_test[:1000]
+y_test_sample = y_test[:1000]
 y_pred = pd.DataFrame(model.predict(X_test_sample), columns=['pos_x', 'pos_y'])
 #Desescalamos
 y_test_sample = descale_dataframe(y_test_sample)

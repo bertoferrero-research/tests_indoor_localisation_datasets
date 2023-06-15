@@ -1,18 +1,20 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import pickle
+import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 
 #region Carga de datos
-def load_training_data(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False):
+def load_training_data(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False):
     #Cargamos los ficheros
     train_data = pd.read_csv(training_file)
     test_data = pd.read_csv(test_file)
 
     #Preparamos los datos
-    X_train, y_train = prepare_data(train_data, include_pos_z, scale_y)
-    X_test, y_test = prepare_data(test_data, include_pos_z, scale_y)
+    X_train, y_train = prepare_data(train_data, include_pos_z, scale_y, remove_not_full_rows)
+    X_test, y_test = prepare_data(test_data, include_pos_z, scale_y, remove_not_full_rows)
 
     #Escalamos
     if scaler_file is not None:
@@ -37,12 +39,12 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
     #Devolvemos
     return X_train, y_train, X_test, y_test
 
-def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False):
+def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Cargamos el fichero
     track_data = pd.read_csv(track_file)
 
     #Preparamos los datos
-    X, y = prepare_data(track_data, include_pos_z, scale_y)
+    X, y = prepare_data(track_data, include_pos_z, scale_y, remove_not_full_rows, True)
 
     #Escalamos
     if scaler_file is not None:
@@ -57,25 +59,76 @@ def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: 
     #Devolvemos
     return X, y
 
-def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False):
+def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, soft_remove_not_full_rows: bool=True):
+    #Eliminamos las filas que no tienen todos los datos
+    
+    if remove_not_full_rows:
+        #Reemplazamos los -200 en las columnas de rssi (a partir de la cuarta) por NaN
+        data.iloc[:, 4:] = data.iloc[:, 4:].replace(-200, np.nan)
+        #Si se solicita borrado suave, intentamos salvar las que podamos
+        if soft_remove_not_full_rows:
+            #Si la fila tiene mas de 3 NaN, la eliminamos
+            data = data.dropna(thresh=3)
+            #Para el resto de Nan, intentamos coger el valor previo, si no el valor siguiente
+            #data = data.fillna(method='ffill')
+            #data = data.fillna(method='bfill')
+        #Si aun quedan NaN, los eliminamos
+        #data = data.dropna()
+
     #Extraemos cada parte
     y = data.iloc[:, 1:(4 if include_pos_z else 3)]
     X = data.iloc[:, 4:]
     #Escalamos y
     if scale_y:
         y = scale_dataframe(y)
-    #Convertimos a float32 e in32 para reducir complejidad
-    y = y.astype(np.float32)
-    X = X.astype(np.int32)
-    #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
-    #nodes = X.columns
-    #for node in nodes:
-    #  X[node+"_on"] = (X[node] > 0).astype(np.int32)
 
     #Ordenamos alfabéticamente las columnas de X, asegurandonos de que todos los datasets van en el mismo orden
     X = X.reindex(sorted(X.columns), axis=1)
+
+    #Inputamos los valores de -200 por el modelo
+    if remove_not_full_rows:
+        X = imputing_predict_na_data(X)
+
+    #Convertimos a float32 e in32 para reducir complejidad
+    y = y.astype(np.float32)
+    X = X.astype(np.int32)
+
     #Devolvemos
     return X,y
+
+def imputing_predict_na_data(data: pd.DataFrame):
+    #Creamos una copia de data para el trabajo
+    data_tmp = data.copy()
+    #Reemplazamos los -200 por NaN
+    data = data.replace(-200, np.nan)
+    #Borramos las filas que tengan 3 o mas NaN
+    #data_tmp = data_tmp.dropna(thresh=3)
+    #Nos aseguramos que en el tmp sea -200
+    data_tmp = data_tmp.replace(np.nan, -200)
+
+    #Cargamos el scaler
+    scaler = MinMaxScaler()
+    scaler.fit([[-100], [0]])
+    #Escalamos
+    for sensor in data_tmp.columns:
+        data_tmp[sensor] = scaler.transform(data_tmp[sensor].values.reshape(-1, 1)).flatten()
+
+    #Cargamos el modelo
+    model = tf.keras.models.load_model('dataset_imputing_values/files/model.h5')
+    #Predecimos
+    data_tmp_output = model.predict(data_tmp.values.reshape(data_tmp.shape[0], data_tmp.shape[1], 1))
+    #Desescalamos
+    data_tmp_output = scaler.inverse_transform(data_tmp_output.reshape(data_tmp_output.shape[0], data_tmp_output.shape[1]))
+    data_tmp_output = pd.DataFrame(data_tmp_output, columns=data_tmp.columns).round()
+
+    #Reemplazamos los -200 por los valores predichos
+    for index,row in data.iterrows():
+        for sensor in data.columns:
+            if np.isnan(row[sensor]):
+                data[sensor][index] = data_tmp_output[sensor][index]
+
+    #Devolvemos
+    return data
 
 
 def group_rssi_2dmap(data: pd.DataFrame, default_empty_value: int=-200):

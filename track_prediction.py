@@ -14,6 +14,7 @@ input_file_name = 'track_straight_01_all_sensors.mbd_v2'
 model = 'cnn'
 use_pos_z = False
 scale_y = True
+remove_not_full_rows = True
 
 #Variables globales
 track_file = './dataset_processed_csv/'+input_file_name+'.csv'
@@ -25,7 +26,7 @@ model_file = model_dir+'/files/model.h5'
 
 
 #Preparamos los datos
-input_data, output_data = load_real_track_data(track_file, scaler_file, use_pos_z, scale_y)
+input_data, output_data = load_real_track_data(track_file, scaler_file, use_pos_z, scale_y, remove_not_full_rows)
 print(input_data)
 
 #Si el modelo es cnn, tenemos que darle una forma especial

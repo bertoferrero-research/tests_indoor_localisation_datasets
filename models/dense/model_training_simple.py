@@ -27,7 +27,7 @@ model_file = script_dir+'/files/model.h5'
 
 
 #Cargamos los ficheros
-X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True)
+X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True, False, True)
 
 
 print(X_train)
@@ -62,11 +62,11 @@ print(model.summary())
 
 #Entrenamos
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                     batch_size=  1000,
-                     epochs=  100, 
+                     batch_size=  1500,
+                     epochs=  200, 
                      verbose=1)
 
-#plot_learning_curves(history)
+plot_learning_curves(history)
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
