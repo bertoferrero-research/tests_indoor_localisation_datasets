@@ -16,8 +16,8 @@ from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_dataframe
 
 #Variables globales
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_inputed.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_inputed.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 scaler_output_file = script_dir+'/files/scaler_output.pkl'
 model_file = script_dir+'/files/model.h5'
@@ -31,19 +31,19 @@ print(y_train)
 
 #Creamos el modelo
 model = Sequential()
-model.add(Conv1D(32, 3, activation='relu', input_shape=(X_train.shape[1], 1)))
-model.add(MaxPooling1D(2))
-model.add(Conv1D(64, 2, activation='relu'))
+model.add(Conv1D(64, 3, activation='relu', input_shape=(X_train.shape[1], 1)))
 model.add(MaxPooling1D(2))
 model.add(Conv1D(128, 2, activation='relu'))
+model.add(MaxPooling1D(2))
+model.add(Conv1D(256, 2, activation='relu'))
 model.add(MaxPooling1D(1))
 model.add(Flatten())
-model.add(Dense(256, activation='relu'))
+model.add(Dense(512, activation='relu'))
 #model.add(Dropout(0.2))
 model.add(Dense(y_train.shape[1], activation='sigmoid'))  # 3 salidas para las coordenadas (x, y, z)
 
 # Compilar el modelo
-model.compile(loss='mse', optimizer='RMSProp', metrics=['accuracy','mse','mae'] )
+model.compile(loss='mae', optimizer='RMSProp', metrics=['accuracy','mse','mae'] )
 
 # Resumen del modelo
 model.summary()
@@ -53,7 +53,7 @@ X_train = X_train.values.reshape(X_train.shape[0], X_train.shape[1], 1)
 X_test = X_test.values.reshape(X_test.shape[0], X_test.shape[1], 1)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  1500,
-                     epochs=  12, 
+                     epochs=  30, 
                      verbose=1)
 
 plot_learning_curves(history)

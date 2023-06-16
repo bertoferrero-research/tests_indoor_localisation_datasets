@@ -6,63 +6,26 @@ import math
 import os.path
 import pickle
 from sklearn.preprocessing import StandardScaler
+import sys
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+sys.path.insert(1, script_dir+'/../../')
+from lib.trainingcommon import plot_learning_curves
+from lib.trainingcommon import load_training_data
+from lib.trainingcommon import descale_pos_x
+from lib.trainingcommon import descale_dataframe
+
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_inputed.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_inputed.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 model_file = script_dir+'/files/model.h5'
 
-#Funciones
-#Preparamos los datos para ser introducidos en el modelo
-def prepare_data(data):
-    #Extraemos cada parte
-    y = data.iloc[:, 1:4]
-    X = data.iloc[:, 4:]
-    #Normalizamos los rssi a valores positivos de 0 a 1
-    #X += 100
-    #X /= 100
-    #Convertimos a float32 para reducir complejidad
-    X = X.astype(np.int32)
-    y = y.round(4).astype(np.float32)
-    #Por cada columna de X añadimos otra indicando si ese nodo ha de tenerse o no en cuenta
-    #nodes = X.columns
-    #for node in nodes:
-    #  X[node+"_on"] = (X[node] > 0).astype(np.int32)
-
-    #Ordenamos alfabéticamente las columnas de X, asegurandonos de que todos los datasets van en el mismo orden
-    X = X.reindex(sorted(X.columns), axis=1)
-    #Devolvemos
-    return X,y
-
-def plot_learning_curves(hist):
-  plt.plot(hist.history['loss'])
-  plt.plot(hist.history['val_loss'])
-  plt.title('Curvas de aprendizaje')
-  plt.ylabel('Loss')
-  plt.xlabel('Epoch')  
-  plt.legend(['Conjunto de entrenamiento', 'Conjunto de validación'], loc='upper right')
-  plt.show()
-
 
 #Cargamos los ficheros
-train_data = pd.read_csv(training_file)
-test_data = pd.read_csv(test_file)
+X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True, False, True)
 
-#Preparamos los datos
-X_train, y_train = prepare_data(train_data)
-X_test, y_test = prepare_data(test_data)
-
-#Escalamos
-scaler = StandardScaler()
-scaler.fit(X_train)
-with open(scaler_file, 'wb') as scalerFile:
-  pickle.dump(scaler, scalerFile)
-  scalerFile.close()
-
-X_train = scaler.transform(X_train)
-X_test = scaler.transform(X_test)
 
 print(X_train)
 print(y_train)
@@ -85,7 +48,7 @@ input = tf.keras.layers.Input(shape=inputlength)
 #x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 #x = tf.keras.layers.Dropout(0.2)(x)
-output = tf.keras.layers.Dense(outputlength, activation='relu')(x) #La salida son valores positivos
+output = tf.keras.layers.Dense(outputlength, activation='sigmoid')(x)
 #output = tf.keras.layers.Dropout(0.2)(x)
 model = tf.keras.models.Model(inputs=input, outputs=output)
 
@@ -96,11 +59,11 @@ print(model.summary())
 
 #Entrenamos
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                     batch_size=  1000,
-                     epochs=  100, 
+                     batch_size=  1500,
+                     epochs=  20, 
                      verbose=1)
 
-#plot_learning_curves(history)
+plot_learning_curves(history)
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
@@ -113,7 +76,13 @@ print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 print('Estimación de puntos de test:')
 X_test_sample = X_train[:5000]
 y_test_sample = y_train[:5000]
-y_pred = pd.DataFrame(model.predict(X_test_sample), columns=['pos_x', 'pos_y', 'pos_z'])
+prediction = model.predict(X_test_sample)
+print(prediction)
+y_pred = pd.DataFrame(prediction, columns=['pos_x', 'pos_y'])
+#Desescalamos
+y_test_sample = descale_dataframe(y_test_sample)
+y_pred = descale_dataframe(y_pred)
+
 print(y_pred)
 print(y_test_sample)
 plt.plot(y_test_sample['pos_y'].values, y_test_sample['pos_x'].values, 'go-', label='Real', linewidth=1)

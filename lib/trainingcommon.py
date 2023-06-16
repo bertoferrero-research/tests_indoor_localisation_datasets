@@ -70,8 +70,8 @@ def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not
             #Si la fila tiene mas de 3 NaN, la eliminamos
             data = data.dropna(thresh=3)
             #Para el resto de Nan, intentamos coger el valor previo, si no el valor siguiente
-            #data = data.fillna(method='ffill')
-            #data = data.fillna(method='bfill')
+            data = data.fillna(method='ffill')
+            data = data.fillna(method='bfill')
         #Si aun quedan NaN, los eliminamos
         #data = data.dropna()
 
@@ -86,8 +86,8 @@ def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not
     X = X.reindex(sorted(X.columns), axis=1)
 
     #Inputamos los valores de -200 por el modelo
-    if remove_not_full_rows:
-        X = imputing_predict_na_data(X)
+    #if remove_not_full_rows:
+    #    X = imputing_predict_na_data(X)
 
     #Convertimos a float32 e in32 para reducir complejidad
     y = y.astype(np.float32)
