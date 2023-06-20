@@ -17,8 +17,8 @@ from lib.trainingcommon import descale_dataframe
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_inputed.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_inputed.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 model_file = script_dir+'/files/model.h5'
 

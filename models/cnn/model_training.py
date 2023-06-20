@@ -53,7 +53,7 @@ X_train = X_train.values.reshape(X_train.shape[0], X_train.shape[1], 1)
 X_test = X_test.values.reshape(X_test.shape[0], X_test.shape[1], 1)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  1500,
-                     epochs=  30, 
+                     epochs=  70, 
                      verbose=1)
 
 plot_learning_curves(history)

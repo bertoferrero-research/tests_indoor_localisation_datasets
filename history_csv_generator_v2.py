@@ -5,6 +5,8 @@ import re
 import os.path
 import math
 
+#Reemplaza los rssi faltantes por la media de todos los rssi de ese sensor
+
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 fingerprint_history_folder = script_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales

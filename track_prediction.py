@@ -11,7 +11,7 @@ from lib.trainingcommon import descale_pos_y
 
 #Configuración
 input_file_name = 'track_straight_01_all_sensors.mbd_v2'
-model = 'cnn'
+model = 'dense'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True

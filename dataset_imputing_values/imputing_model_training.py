@@ -93,19 +93,19 @@ decoded = Dense(df_output.shape[1], activation='linear')(encoded)
 # Entrada
 input_sensors = Input(shape=(df_input.shape[1], 1)) 
 # Encoder...
-x = Conv1D(32, 3, activation='relu', padding='same')(input_sensors)
-x = MaxPooling1D(2, padding='same')(x)
-x = Conv1D(64, 2, activation='relu', padding='same')(x)
+x = Conv1D(64, 3, activation='relu', padding='same')(input_sensors)
 x = MaxPooling1D(2, padding='same')(x)
 x = Conv1D(128, 2, activation='relu', padding='same')(x)
+x = MaxPooling1D(2, padding='same')(x)
+x = Conv1D(256, 2, activation='relu', padding='same')(x)
 encoded = MaxPooling1D(1, padding='same')(x)
 
 # Decoder...
-x = Conv1D(128, 2, activation='relu', padding='same')(encoded)
+x = Conv1D(256, 2, activation='relu', padding='same')(encoded)
 x = UpSampling1D(1)(x)
-x = Conv1D(64, 2, activation='relu', padding='same')(x)
+x = Conv1D(128, 2, activation='relu', padding='same')(x)
 x = UpSampling1D(2)(x)
-x = Conv1D(32, 3, activation='relu', padding='same')(x)
+x = Conv1D(64, 3, activation='relu', padding='same')(x)
 x = UpSampling1D(2)(x)
 
 
@@ -144,7 +144,7 @@ train_output, test_output = df_output.iloc[:train_size].reset_index(drop=True), 
 #Entrenamos el modelo
 train_input = train_input.values.reshape(train_input.shape[0], train_input.shape[1], 1)
 train_output = train_output.values.reshape(train_output.shape[0], train_output.shape[1], 1)
-history = model.fit(train_input, train_output, epochs=100, batch_size=5280, validation_data=(test_input, test_output))
+history = model.fit(train_input, train_output, epochs=40, batch_size=1250, validation_data=(test_input, test_output))
 
 
 plot_learning_curves(history)

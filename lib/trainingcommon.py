@@ -86,6 +86,7 @@ def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not
     X = X.reindex(sorted(X.columns), axis=1)
 
     #Inputamos los valores de -200 por el modelo
+    #YA no es necesario, hay un csv con los datos inputados
     #if remove_not_full_rows:
     #    X = imputing_predict_na_data(X)
 

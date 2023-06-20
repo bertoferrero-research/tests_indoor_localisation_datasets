@@ -6,6 +6,7 @@ import os.path
 import math
 
 #Este archivo vuelca todos los datos en bruto, con valor de -200 para los sensores que no han detectado nada.
+#Añade una columna de estado con 1 si el sensor ha detectado algo y 0 si no ha detectado nada.
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
