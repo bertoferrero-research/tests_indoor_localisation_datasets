@@ -44,7 +44,7 @@ def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: 
     track_data = pd.read_csv(track_file)
 
     #Preparamos los datos
-    X, y = prepare_data(track_data, include_pos_z, scale_y, remove_not_full_rows, True)
+    X, y = prepare_data(track_data, include_pos_z, scale_y, remove_not_full_rows)
 
     #Escalamos
     if scaler_file is not None:
@@ -59,21 +59,12 @@ def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: 
     #Devolvemos
     return X, y
 
-def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, soft_remove_not_full_rows: bool=True):
+def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Eliminamos las filas que no tienen todos los datos
     
     if remove_not_full_rows:
         #Reemplazamos los -200 en las columnas de rssi (a partir de la cuarta) por NaN
         data.iloc[:, 4:] = data.iloc[:, 4:].replace(-200, np.nan)
-        #Si se solicita borrado suave, intentamos salvar las que podamos
-        if soft_remove_not_full_rows:
-            #Si la fila tiene mas de 3 NaN, la eliminamos
-            data = data.dropna(thresh=3)
-            #Para el resto de Nan, intentamos coger el valor previo, si no el valor siguiente
-            data = data.fillna(method='ffill')
-            data = data.fillna(method='bfill')
-        #Si aun quedan NaN, los eliminamos
-        #data = data.dropna()
 
     #Extraemos cada parte
     y = data.iloc[:, 1:(4 if include_pos_z else 3)]

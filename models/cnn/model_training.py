@@ -16,15 +16,16 @@ from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_dataframe
 
 #Variables globales
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_inputed.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_inputed.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_inputed_mediaprevpost.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_inputed_mediaprevpost.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 scaler_output_file = script_dir+'/files/scaler_output.pkl'
 model_file = script_dir+'/files/model.h5'
+scale_y = True
 
 #Cargamos los ficheros
 print("Cargando datos")
-X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, True, False, True)
+X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, scale_y, False, True)
 print("Carga de datos limpios")
 print(X_train)
 print(y_train)
@@ -39,8 +40,10 @@ model.add(Conv1D(256, 2, activation='relu'))
 model.add(MaxPooling1D(1))
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
-#model.add(Dropout(0.2))
-model.add(Dense(y_train.shape[1], activation='sigmoid'))  # 3 salidas para las coordenadas (x, y, z)
+model.add(Dropout(0.2))
+model.add(Dense(64, activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(y_train.shape[1], activation='linear'))  # 3 salidas para las coordenadas (x, y, z)
 
 # Compilar el modelo
 model.compile(loss='mae', optimizer='RMSProp', metrics=['accuracy','mse','mae'] )
@@ -53,7 +56,7 @@ X_train = X_train.values.reshape(X_train.shape[0], X_train.shape[1], 1)
 X_test = X_test.values.reshape(X_test.shape[0], X_test.shape[1], 1)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  1500,
-                     epochs=  70, 
+                     epochs=  50, 
                      verbose=1)
 
 plot_learning_curves(history)
@@ -71,8 +74,9 @@ X_test_sample = X_test[:1000]
 y_test_sample = y_test[:1000]
 y_pred = pd.DataFrame(model.predict(X_test_sample), columns=['pos_x', 'pos_y'])
 #Desescalamos
-y_test_sample = descale_dataframe(y_test_sample)
-y_pred = descale_dataframe(y_pred)
+if scale_y:
+  y_test_sample = descale_dataframe(y_test_sample)
+  y_pred = descale_dataframe(y_pred)
 
 print(X_test_sample)
 print(y_pred)

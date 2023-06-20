@@ -10,8 +10,8 @@ from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_pos_y
 
 #Configuración
-input_file_name = 'track_straight_01_all_sensors.mbd_v2'
-model = 'dense'
+input_file_name = 'track_straight_01_all_sensors.mbd_v2_inputed_mediaprevpost'
+model = 'cnn'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True
@@ -77,6 +77,14 @@ if scale_y:
 output_data['deviation_x'] = (output_data['predicted_x'] - output_data['real_x']).abs()
 output_data['deviation_y'] = (output_data['predicted_y'] - output_data['real_y']).abs()
 #output_data['deviation_z'] = (output_data['predicted_z'] - output_data['real_z']).abs()
+
+#Imprimimos la desviacion máxima minima y media de X e Y
+print("Desviación máxima X: "+str(output_data['deviation_x'].max()))
+print("Desviación mínima X: "+str(output_data['deviation_x'].min()))
+print("Desviación media X: "+str(output_data['deviation_x'].mean()))
+print("Desviación máxima Y: "+str(output_data['deviation_y'].max()))
+print("Desviación mínima Y: "+str(output_data['deviation_y'].min()))
+print("Desviación media Y: "+str(output_data['deviation_y'].mean()))
 
 
 #Hacemos la salida
