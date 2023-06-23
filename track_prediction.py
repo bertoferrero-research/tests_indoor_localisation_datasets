@@ -8,6 +8,7 @@ import pickle
 from lib.trainingcommon import load_real_track_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_pos_y
+from lib.filters.montecarlofilter import monte_carlo_filter
 
 #Configuración
 input_file_name = 'track_straight_01_all_sensors.mbd_v2_inputed_mediaprevpost'
@@ -78,19 +79,39 @@ output_data['deviation_x'] = (output_data['predicted_x'] - output_data['real_x']
 output_data['deviation_y'] = (output_data['predicted_y'] - output_data['real_y']).abs()
 #output_data['deviation_z'] = (output_data['predicted_z'] - output_data['real_z']).abs()
 
+#Filtramos
+filtered_particles, filtered_predicted_data = monte_carlo_filter(output_data[['predicted_x', 'predicted_y']].to_numpy(), 100)
+
+filtered_predicted_data = pd.DataFrame(filtered_predicted_data)
+output_data['filtered_x'] = filtered_predicted_data[[0]]
+output_data['filtered_y'] = filtered_predicted_data[[1]]
+output_data['deviation_filtered_x'] = (output_data['filtered_x'] - output_data['real_x']).abs()
+output_data['deviation_filtered_y'] = (output_data['filtered_y'] - output_data['real_y']).abs()
+
+
+
 #Imprimimos la desviacion máxima minima y media de X e Y
+print("- Desviaciones en predicciones -")
 print("Desviación máxima X: "+str(output_data['deviation_x'].max()))
 print("Desviación mínima X: "+str(output_data['deviation_x'].min()))
 print("Desviación media X: "+str(output_data['deviation_x'].mean()))
 print("Desviación máxima Y: "+str(output_data['deviation_y'].max()))
 print("Desviación mínima Y: "+str(output_data['deviation_y'].min()))
 print("Desviación media Y: "+str(output_data['deviation_y'].mean()))
-
+print("- Desviaciones tras filtro -")
+print("Desviación máxima X: "+str(output_data['deviation_filtered_x'].max()))
+print("Desviación mínima X: "+str(output_data['deviation_filtered_x'].min()))
+print("Desviación media X: "+str(output_data['deviation_filtered_x'].mean()))
+print("Desviación máxima Y: "+str(output_data['deviation_filtered_y'].max()))
+print("Desviación mínima Y: "+str(output_data['deviation_filtered_y'].min()))
+print("Desviación media Y: "+str(output_data['deviation_filtered_y'].mean()))
 
 #Hacemos la salida
 output_data.to_csv(output_file, index=False)
 
+
 #Mostramos el grafico
 plt.plot(output_data['real_y'].values, output_data['real_x'].values, 'go-', label='Real', linewidth=1)
 plt.plot(output_data['predicted_y'].values, output_data['predicted_x'].values, 'ro-', label='Calculada', linewidth=1)
+plt.plot(output_data['filtered_y'].values, output_data['filtered_x'].values, 'bo-', label='Calculada', linewidth=1)
 plt.show()
