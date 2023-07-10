@@ -17,8 +17,8 @@ from lib.trainingcommon import descale_dataframe
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_window.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_window.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 model_file = script_dir+'/files/model.h5'
 
@@ -48,7 +48,7 @@ input = tf.keras.layers.Input(shape=inputlength)
 #x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 #x = tf.keras.layers.Dropout(0.2)(x)
-output = tf.keras.layers.Dense(outputlength, activation='sigmoid')(x)
+output = tf.keras.layers.Dense(outputlength, activation='linear')(x)
 #output = tf.keras.layers.Dropout(0.2)(x)
 model = tf.keras.models.Model(inputs=input, outputs=output)
 
@@ -60,7 +60,7 @@ print(model.summary())
 #Entrenamos
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  1500,
-                     epochs=  20, 
+                     epochs=  100, 
                      verbose=1)
 
 plot_learning_curves(history)
@@ -72,22 +72,20 @@ print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
 print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
+'''
 #Intentamos estimar los puntos de test
-print('Estimación de puntos de test:')
-X_test_sample = X_train[:5000]
-y_test_sample = y_train[:5000]
+X_test_sample = X_train#[:5000]
+y_test_sample = y_train#[:5000]
 prediction = model.predict(X_test_sample)
-print(prediction)
 y_pred = pd.DataFrame(prediction, columns=['pos_x', 'pos_y'])
 #Desescalamos
 y_test_sample = descale_dataframe(y_test_sample)
 y_pred = descale_dataframe(y_pred)
 
-print(y_pred)
-print(y_test_sample)
 plt.plot(y_test_sample['pos_y'].values, y_test_sample['pos_x'].values, 'go-', label='Real', linewidth=1)
-plt.plot(y_pred['pos_y'].values, y_pred['pos_x'].values, 'ro-', label='Calculada', linewidth=1)
+#plt.plot(y_pred['pos_y'].values, y_pred['pos_x'].values, 'ro-', label='Calculada', linewidth=1)
 plt.show()
+'''
 
 #Guardamos el modelo
 if os.path.exists(model_file):

@@ -16,8 +16,8 @@ from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_dataframe
 
 #Variables globales
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_inputed_mediaprevpost.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_inputed_mediaprevpost.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_window.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_window.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 scaler_output_file = script_dir+'/files/scaler_output.pkl'
 model_file = script_dir+'/files/model.h5'
@@ -25,7 +25,7 @@ scale_y = True
 
 #Cargamos los ficheros
 print("Cargando datos")
-X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, scale_y, False, True)
+X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, False, scale_y, False, False)
 print("Carga de datos limpios")
 print(X_train)
 print(y_train)
@@ -39,14 +39,14 @@ model.add(MaxPooling1D(2))
 model.add(Conv1D(256, 2, activation='relu'))
 model.add(MaxPooling1D(1))
 model.add(Flatten())
-model.add(Dense(512, activation='relu'))
-model.add(Dropout(0.2))
+#model.add(Dense(512, activation='relu'))
+#model.add(Dropout(0.2))
 model.add(Dense(64, activation='relu'))
-model.add(Dropout(0.2))
+#model.add(Dropout(0.2))
 model.add(Dense(y_train.shape[1], activation='linear'))  # 3 salidas para las coordenadas (x, y, z)
 
 # Compilar el modelo
-model.compile(loss='mae', optimizer='RMSProp', metrics=['accuracy','mse','mae'] )
+model.compile(loss='mse', optimizer='RMSProp', metrics=['accuracy','mse','mae'] )
 
 # Resumen del modelo
 model.summary()
@@ -56,7 +56,7 @@ X_train = X_train.values.reshape(X_train.shape[0], X_train.shape[1], 1)
 X_test = X_test.values.reshape(X_test.shape[0], X_test.shape[1], 1)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  1500,
-                     epochs=  50, 
+                     epochs=  75, 
                      verbose=1)
 
 plot_learning_curves(history)
@@ -68,6 +68,7 @@ print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
 print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
+'''
 #Intentamos estimar los puntos de test
 print('Estimación de puntos de test:')
 X_test_sample = X_test[:1000]
@@ -84,7 +85,7 @@ print(y_test_sample)
 plt.plot(y_test_sample['pos_y'].values, y_test_sample['pos_x'].values, 'go-', label='Real', linewidth=1)
 plt.plot(y_pred['pos_y'].values, y_pred['pos_x'].values, 'ro-', label='Calculada', linewidth=1)
 plt.show()
-
+'''
 #Guardamos el modelo
 if os.path.exists(model_file):
   os.remove(model_file)
