@@ -13,7 +13,7 @@ from lib.filters.particlefilter import particle_filter
 
 #Configuración
 input_file_name = 'track_straight_01_all_sensors.mbd_window'
-model = 'cnn'
+model = 'dense'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True
