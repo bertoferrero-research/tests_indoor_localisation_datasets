@@ -1,19 +1,25 @@
-from lib.datasethelper import parseDevices
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os.path
+import sys
 from easy_trilateration.model import *  
 from easy_trilateration.least_squares import easy_least_squares  
 from easy_trilateration.graph import *  
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+root_dir = script_dir+'/../'
+sys.path.insert(1, root_dir)
+from lib.datasethelper import parseDevices
 
 #Configuración
 input_file_name = 'track_straight_01_all_sensors.mbd_window'
-number_of_nodes = 3
+number_of_nodes = 4
 
 #Variables globales
-track_file = './dataset_processed_csv/'+input_file_name+'.csv'
-output_file = './prediction_output/trilateration_m2_'+input_file_name+'.csv'
-config_file = './dataset/cnf/tetam.dev'
+track_file = root_dir+'dataset_processed_csv/'+input_file_name+'.csv'
+output_file = root_dir+'prediction_output/trilateration_m2_'+input_file_name+'.csv'
+config_file = root_dir+'dataset/cnf/tetam.dev'
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
@@ -37,7 +43,7 @@ for index, rssi_row in rssis.iterrows():
     #Extraemos el rssi
     dongle_rssi = rssi_row[dongleMac]
     #Generamos el circulo
-    dongle_data = Circle(dongle_positions[0], dongle_positions[1], (10 ** ((-57 -(dongle_rssi))/(10 * 2))))
+    dongle_data = Circle(dongle_positions[0], dongle_positions[1], (10 ** ((-20 -(dongle_rssi))/(10 * 6))))
 
     positions.append(dongle_data)
   
