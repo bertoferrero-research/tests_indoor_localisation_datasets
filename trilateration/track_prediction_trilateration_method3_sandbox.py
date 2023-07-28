@@ -15,6 +15,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directori
 root_dir = script_dir+'/../'
 sys.path.insert(1, root_dir)
 from lib.datasethelper import parseDevices
+from lib.plot.trilateration import plot_step_with_distances
 
 #Configuración
 input_file_name = 'track_straight_01_all_sensors.mbd_window'
@@ -30,7 +31,7 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Definimos la función para calcular la distancia desde rssi
-def rssi_to_distance(rssi, A1, A2):
+def rssi_to_distance_A1A2(rssi, A1, A2):
     return 10 ** ((A1 -(rssi))/(10 * A2))
 
 #Cargamos el fichero de configuración de dispositivos
@@ -57,7 +58,7 @@ for index, rssi_row in rssis.iterrows():
     A1 = distance_optimize_config[dongleMac]['A1']
     A2 = distance_optimize_config[dongleMac]['A2']
     #Generamos el circulo
-    dongle_data = Circle(dongle_positions[0], dongle_positions[1], rssi_to_distance(dongle_rssi, A1, A2))
+    dongle_data = Circle(dongle_positions[0], dongle_positions[1], rssi_to_distance_A1A2(dongle_rssi, A1, A2))
 
     positions.append(dongle_data)
 
@@ -69,8 +70,8 @@ for index, rssi_row in rssis.iterrows():
 hist: [Trilateration] = histoypositions
 
 solve_history(hist)
-#print(hist)
 
-a = animate(hist)
+#a = animate(hist)
+plot_step_with_distances(hist[0])
 
   

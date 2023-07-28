@@ -20,7 +20,7 @@ input_file_name = 'fingerprint_history_train_window'
 #input_file_name = 'track_straight_01_all_sensors.mbd_window'
 init_A1 = -35
 init_A2 = 3
-# Definir los márgenes para C y R
+# Definir los márgenes para A1 y A2
 A1_lower_bound = -40
 A1_upper_bound = -30
 A2_lower_bound = 2
