@@ -1,5 +1,5 @@
 '''
-Este fichero intenta ejecutar trilateración empleando las constantes A1 y A2 optimizadas
+Este fichero intenta ejecutar trilateración empleando las constantes A1 y A2 optimizadas y siempre los mismos sensores
 '''
 
 import pandas as pd
@@ -24,7 +24,7 @@ number_of_nodes = 3
 
 # Variables globales
 track_file = root_dir+'dataset_processed_csv/'+input_file_name+'.csv'
-output_file = root_dir+'prediction_output/trilateration_m3_'+input_file_name+'.csv'
+output_file = root_dir+'prediction_output/trilateration_m3.1_'+input_file_name+'.csv'
 config_file = root_dir+'dataset/cnf/tetam.dev'
 distance_optimize_config_file = script_dir + \
     '/output/'+distance_optimize_config_file_name
@@ -48,14 +48,18 @@ trajectory = pd.read_csv(track_file)
 rssis = trajectory.iloc[:, 4:]
 output_data = []
 histoypositions = []
+sensors = ["000000000101", "000000000302", "000000000202"] #[], "000000000402"
 for index, rssi_row in rssis.iterrows():
-    # Obtenemos los tres mejores dongles (con el valor rssi más alto)
-    three_best_dongles = rssi_row.sort_values(
-        ascending=False).head(number_of_nodes).index.tolist()
+    if len(sensors) == 0:
+        # Obtenemos los tres mejores dongles (con el valor rssi más bajo)
+        three_best_dongles = rssi_row.sort_values(
+            ascending=False).head(number_of_nodes).index.tolist()
+        # Guardamos los sensores
+        sensors = three_best_dongles
 
     # Localizamos cada dongle en el listado cargado y acumulamos su posición
     positions = []
-    for dongleMac in three_best_dongles:
+    for dongleMac in sensors:
         # Extraemos la posición
         dongle_positions = dongles[dongleMac][0][:2]
         # Extraemos el rssi
@@ -78,6 +82,7 @@ for index, rssi_row in rssis.iterrows():
 
 #Calculamos la triangulación de todo el histórico
 solve_history(histoypositions)
+#a = animate(histoypositions)
 for i in range(len(output_data)):
     output_data[i]['predicted_x'] = histoypositions[i].result.center.x
     output_data[i]['predicted_y'] = histoypositions[i].result.center.y
