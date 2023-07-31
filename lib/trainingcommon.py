@@ -82,8 +82,8 @@ def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not
     #    X = imputing_predict_na_data(X)
 
     #Convertimos a float32 e in32 para reducir complejidad
-    y = y.astype(np.float32)
-    X = X.astype(np.int32)
+    #y = y.astype(np.float32)
+    #X = X.astype(np.int32)
 
     #Devolvemos
     return X,y

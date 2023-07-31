@@ -9,9 +9,10 @@ import math
 
 ##Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+sensor_filtering_tipe = 'tss'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
 fingerprint_history_folder = script_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_history_train_file = script_dir+'/dataset_processed_csv/fingerprint_history_train_window.csv'                                  #Salida del csv de entrenamiento
-fingerprint_history_test_file = script_dir+'/dataset_processed_csv/fingerprint_history_test_window.csv'                                    #Salida del csv de tests
+fingerprint_history_train_file = script_dir+'/dataset_processed_csv/fingerprint_history_train_window_'+sensor_filtering_tipe+'.csv'                                  #Salida del csv de entrenamiento
+fingerprint_history_test_file = script_dir+'/dataset_processed_csv/fingerprint_history_test_window_'+sensor_filtering_tipe+'.csv'                                    #Salida del csv de tests
 test_data_rate = .2                                                                                 #Porcentaje de filas por posicion a volcar en el archivo de test
 sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
 sensors_mac = []                                                                                    #Extraido de los ficheros
@@ -24,7 +25,7 @@ max_window_size = 1.5                                                           
 min_entries_per_sensor = 3                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
 min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
 invalid_sensor_value = -150                                                                           #Valor que se asigna a los sensores invalidos
-sensor_filtering_tipe = 'median'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min'
+
 
 #Vamos a agrupar las mediciones de todos los sensores por zona de medición, extraemos para ello todos los ficheros del primer sensor, a partir de él leemos el resto
 first_sensor_files = glob.glob(fingerprint_history_folder+'sensor'+sensors_list[0]+'*.mbd')
@@ -98,6 +99,8 @@ for first_sensor_file in first_sensor_files:
                     subdata[sensor_mac] = math.floor(np.max(list(map(lambda x: x['rssi'], sensor_registries))))
                 elif sensor_filtering_tipe == 'min':
                     subdata[sensor_mac] = math.floor(np.min(list(map(lambda x: x['rssi'], sensor_registries))))
+                elif sensor_filtering_tipe == 'tss':
+                    subdata[sensor_mac] = np.sum(list(map(lambda x: 10**(x['rssi']/10), sensor_registries)))
                 else:
                     raise Exception('Invalid filtering type')
             else:

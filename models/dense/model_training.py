@@ -17,8 +17,8 @@ from lib.trainingcommon import descale_dataframe
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_window.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_window.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_window_median.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_window_median.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 model_file = script_dir+'/files/model.h5'
 
@@ -48,6 +48,7 @@ input = tf.keras.layers.Input(shape=inputlength)
 #x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 #x = tf.keras.layers.Dropout(0.2)(x)
+x = tf.keras.layers.Dense(outputlength, activation='linear')(x)
 output = tf.keras.layers.Dense(outputlength, activation='linear')(x)
 #output = tf.keras.layers.Dropout(0.2)(x)
 model = tf.keras.models.Model(inputs=input, outputs=output)

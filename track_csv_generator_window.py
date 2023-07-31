@@ -9,7 +9,8 @@ import math
 script_dir = os.path.dirname(os.path.abspath(__file__))                                                                  #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 fingerprint_track_folder = script_dir+'/dataset/trk/'                                                                    #Ruta donde se encuentran los históricos originales
 fingerprint_track_file = 'straight_01_all_sensors.mbd'                                                                   #Fichero a extraer
-fingerprint_track_output = script_dir+'/dataset_processed_csv/track_'+fingerprint_track_file+'_window.csv'                   #Salida del csv de entrenamiento
+sensor_filtering_tipe = 'tss'                                                                                            #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min', 'tss'
+fingerprint_track_output = script_dir+'/dataset_processed_csv/track_'+fingerprint_track_file+'_window_'+sensor_filtering_tipe+'.csv'                   #Salida del csv de entrenamiento
 time_grouping_timestamp_difference = 0.02                                                                                #Al comprobar la diferencia de tiempos, en cuanto haya una diferencia de mas de este valor se cerrará el grupo anterior
 sensors_mac = []                                                                                                         #Extraido de los ficheros
 #cabeceras de los archivos de los sensores
@@ -22,7 +23,6 @@ max_window_size = 1.5                                                           
 min_entries_per_sensor = 3                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
 min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
 invalid_sensor_value = -150                                                                           #Valor que se asigna a los sensores invalidos
-sensor_filtering_tipe = 'median'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min'
 
 
 #Cargamos el fichero
@@ -76,6 +76,8 @@ for index, row in data.iterrows():
                 subdata[sensor_mac] = math.floor(np.max(list(map(lambda x: x['rssi'], sensor_registries))))
             elif sensor_filtering_tipe == 'min':
                 subdata[sensor_mac] = math.floor(np.min(list(map(lambda x: x['rssi'], sensor_registries))))
+            elif sensor_filtering_tipe == 'tss':
+                subdata[sensor_mac] = np.sum(list(map(lambda x: 10**(x['rssi']/10), sensor_registries)))
             else:
                 raise Exception('Invalid filtering type')
         else:

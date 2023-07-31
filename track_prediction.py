@@ -12,7 +12,7 @@ from lib.filters.montecarlofilter import monte_carlo_filter
 from lib.filters.particlefilter import particle_filter
 
 #Configuración
-input_file_name = 'track_straight_01_all_sensors.mbd_window'
+input_file_name = 'track_straight_01_all_sensors.mbd_window_median'
 model = 'dense'
 use_pos_z = False
 scale_y = True
@@ -103,7 +103,7 @@ output_data.to_csv(output_file, index=False)
 
 
 #Mostramos el grafico
-plt.plot([0, 0, dim_y, dim_y, 0], [0, dim_x,  dim_x, 0, 0], 'go-', label='Real', linewidth=1)
-plt.plot(output_data['real_y'].values, output_data['real_x'].values, 'ro-', label='Real', linewidth=1)
-plt.plot(output_data['predicted_y'].values, output_data['predicted_x'].values, 'mo-', label='Calculada', linewidth=1)
+plt.plot([0, 0, dim_x, dim_x, 0], [0, dim_y,  dim_y, 0, 0], 'go-', label='Real', linewidth=1)
+plt.plot(output_data['real_x'].values, output_data['real_y'].values, 'ro-', label='Real', linewidth=1)
+plt.plot(output_data['predicted_x'].values, output_data['predicted_y'].values, 'mo-', label='Calculada', linewidth=1)
 plt.show()
