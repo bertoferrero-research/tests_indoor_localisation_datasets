@@ -21,6 +21,7 @@ from lib.datasethelper import parseDevices
 input_file_name = 'track_straight_01_all_sensors.mbd_window'
 distance_optimize_config_file_name = 'settings_optimize_constants_1.json'
 number_of_nodes = 3
+sensors = ["000000000101", "000000000302", "000000000202", "000000000102"] #Listado de sensores a utilizar, vacío para autorellenar en el arranque
 
 # Variables globales
 track_file = root_dir+'dataset_processed_csv/'+input_file_name+'.csv'
@@ -48,7 +49,6 @@ trajectory = pd.read_csv(track_file)
 rssis = trajectory.iloc[:, 4:]
 output_data = []
 histoypositions = []
-sensors = ["000000000101", "000000000302", "000000000202"] #[], "000000000402"
 for index, rssi_row in rssis.iterrows():
     if len(sensors) == 0:
         # Obtenemos los tres mejores dongles (con el valor rssi más bajo)
@@ -82,7 +82,7 @@ for index, rssi_row in rssis.iterrows():
 
 #Calculamos la triangulación de todo el histórico
 solve_history(histoypositions)
-#a = animate(histoypositions)
+a = animate(histoypositions)
 for i in range(len(output_data)):
     output_data[i]['predicted_x'] = histoypositions[i].result.center.x
     output_data[i]['predicted_y'] = histoypositions[i].result.center.y
@@ -117,12 +117,12 @@ output_data.to_csv(output_file, index=False)
 
 
 # Mostramos el grafico
-plt.plot([0, 0, dim_y, dim_y, 0], [0, dim_x,  dim_x, 0, 0],
+plt.plot([0, 0, dim_x, dim_x, 0], [0, dim_y, dim_y, 0, 0],
          'go-', label='Real', linewidth=1)
-plt.plot(output_data['real_y'].values,
-         output_data['real_x'].values, 'ro-', label='Real', linewidth=1)
-plt.plot(output_data['predicted_y'].values,
-         output_data['predicted_x'].values, 'mo-', label='Calculada', linewidth=1)
+plt.plot(output_data['real_x'].values,
+         output_data['real_y'].values, 'ro-', label='Real', linewidth=1)
+plt.plot(output_data['predicted_x'].values,
+         output_data['predicted_y'].values, 'mo-', label='Calculada', linewidth=1)
 plt.show()
 
 
