@@ -16,8 +16,8 @@ from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_dataframe
 
 #Variables globales
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_window.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_window.csv'
+training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_window_tss.csv'
+test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_window_tss.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 scaler_output_file = script_dir+'/files/scaler_output.pkl'
 model_file = script_dir+'/files/model.h5'
@@ -36,8 +36,8 @@ model.add(Conv1D(64, 3, activation='relu', input_shape=(X_train.shape[1], 1)))
 model.add(MaxPooling1D(2))
 model.add(Conv1D(128, 2, activation='relu'))
 model.add(MaxPooling1D(2))
-model.add(Conv1D(256, 2, activation='relu'))
-model.add(MaxPooling1D(1))
+#model.add(Conv1D(256, 2, activation='relu'))
+#model.add(MaxPooling1D(1))
 model.add(Flatten())
 #model.add(Dense(512, activation='relu'))
 #model.add(Dropout(0.2))

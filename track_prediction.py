@@ -12,8 +12,8 @@ from lib.filters.montecarlofilter import monte_carlo_filter
 from lib.filters.particlefilter import particle_filter
 
 #Configuración
-input_file_name = 'track_straight_01_all_sensors.mbd_window_median'
-model = 'dense'
+input_file_name = 'track_straight_01_all_sensors.mbd_window_tss'
+model = 'cnn'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True
