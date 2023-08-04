@@ -39,6 +39,58 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
     #Devolvemos
     return X_train, y_train, X_test, y_test
 
+def load_training_data_inverse(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False, macs_as_one_hot: bool=False):
+    '''
+    Devuelve los datos de entrenamiento y test preparados para entrenar la predicción de posicion a rssi.
+    La salida para X contendrá tres columnas, pos_x, pos_y y mac
+    La salida para y contendrá el valor rssi correspondiente
+    '''
+    #Recogemos los valores originales
+    X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, include_pos_z, scale_y, group_x_2dmap, remove_not_full_rows)
+
+    #Acumulamos los datos en el formato nuevo
+    sensors = X_train.columns.to_list()
+    sensors.sort()
+    train_data = []
+    for index, row in y_train.iterrows():
+        for i in range(len(sensors)):
+            sensor = sensors[i]
+            train_data.append({
+                'pos_x': row['pos_x'],
+                'pos_y': row['pos_y'],
+                'sensor_mac': (i if macs_as_one_hot else sensor),
+                'rssi': X_train[sensor][index]
+            })
+    train_data = pd.DataFrame(train_data)
+    X_train = train_data[['pos_x', 'pos_y', 'sensor_mac']]
+    y_train = train_data['rssi']
+
+    test_data = []
+    for index, row in y_test.iterrows():
+        for i in range(len(sensors)):
+            sensor = sensors[i]
+            test_data.append({
+                'pos_x': row['pos_x'],
+                'pos_y': row['pos_y'],
+                'sensor_mac': (i if macs_as_one_hot else sensor),
+                'rssi': X_test[sensor][index]
+            })
+    test_data = pd.DataFrame(test_data)
+    X_test = test_data[['pos_x', 'pos_y', 'sensor_mac']]
+    y_test = test_data['rssi']
+
+    #Convertimos a one-hot
+    if macs_as_one_hot:
+        X_train_copy = X_train.copy()
+        X_train_copy['sensor_mac'] = X_train['sensor_mac'].astype('category')
+        X_train = X_train_copy
+        X_test_copy = X_test.copy()
+        X_test_copy['sensor_mac'] = X_test['sensor_mac'].astype('category')
+        X_test = X_test_copy
+    
+    #Devolvemos
+    return X_train, y_train, X_test, y_test
+
 def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Cargamos el fichero
     track_data = pd.read_csv(track_file)
