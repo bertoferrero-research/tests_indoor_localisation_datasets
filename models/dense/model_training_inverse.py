@@ -1,7 +1,8 @@
 '''
 Este modelo trata de estimar los valores de RSSI partiendo de una posición
 '''
-
+from keras.models import Model
+from keras.layers import Input, Embedding, Dense, concatenate, Flatten
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -26,45 +27,46 @@ test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_wi
 scaler_file = script_dir+'/files/scaler_inverse.pkl'
 model_file = script_dir+'/files/model_inverse.h5'
 
+#Hiperparámetros
+embedding_size = 12
+batch_size = 1500
+epochs = 150
+
 
 #Cargamos los ficheros
-X_train, y_train, X_test, y_test = load_training_data_inverse(training_file, test_file, scaler_file, False, True, False, True, macs_as_one_hot=True)
+X_train, y_train, X_test, y_test, sensors_mapping = load_training_data_inverse(training_file, test_file, scaler_file, False, True, False, True, separate_mac_and_pos=True)
 
+#####Construimos el modelo
+#Capas de entrada
+input_positions = Input(X_train[0].shape[1], name='input_positions')
+input_mac = Input(X_train[1].shape[1], name='input_mac')
 
-#Mostramos los valores de la primera columna
-#pdTable = pd.DataFrame({'quantity acumulada':X_train.iloc(axis=1)[0]})
-#pdTable.plot(kind='box')
-#plt.show()
+#Capa de embedding
+embedded_mac = Embedding(input_dim=len(sensors_mapping), output_dim=embedding_size, name='embedded_mac')(input_mac)
 
-#Construimos el modelo
-#Nos basamos en el diseño descrito en el paper "Indoor Localization using RSSI and Artificial Neural Network"
-#The amount of neuron must be should be 2/3 of the size of the input layer plus the size of the output layer.  The number of neurons should be fewer double the size of the input layer.
-inputlength = X_train.shape[1]
-outputlength = 1#y_train.shape[1]
-hiddenLayerLength = 3
-print("Tamaño de la entrada: "+str(inputlength))
-print("Tamaño de la salida: "+str(outputlength))
-print("Tamaño de la capa oculta: "+str(hiddenLayerLength))
+#Aplanamos la capa de embedding y la concatenamos con las posiciones x e y
+flatten_mac = Flatten()(embedded_mac)
+concatenated_inputs = concatenate([input_positions, flatten_mac])
 
-input = tf.keras.layers.Input(shape=inputlength)
-#x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-#x = tf.keras.layers.Dropout(0.2)(x)
-#x = tf.keras.layers.Dense(outputlength, activation='linear')(x)
-x = tf.keras.layers.Dense(outputlength, activation='linear')(x)
-output = tf.keras.layers.Dense(outputlength, activation='linear')(x)
-#output = tf.keras.layers.Dropout(0.2)(x)
-model = tf.keras.models.Model(inputs=input, outputs=output)
+#Capas ocultas y de salida
+hidden_layer = Dense(128, activation='relu')(concatenated_inputs)
+hidden_layer = Dense(128, activation='relu')(hidden_layer)
+hidden_layer = Dense(64, activation='relu')(hidden_layer)
+hidden_layer = Dense(64, activation='relu')(hidden_layer)
+hidden_layer = Dense(32, activation='relu')(hidden_layer)
+output_layer = Dense(1, activation='linear')(hidden_layer)
 
-model.compile(loss='mae', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
+#Creamos el modelo
+model = Model(inputs=[input_positions, input_mac], outputs=output_layer)
+model.compile(loss='mse', optimizer='adam', metrics=['mse'] )
 #comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
 #Seguir luchando por bajar el accuracy en regresion no es buena idea https://stats.stackexchange.com/questions/352036/why-is-accuracy-not-a-good-measure-for-regression-models
 print(model.summary())
 
 #Entrenamos
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                     batch_size=  1500,
-                     epochs=  100, 
+                     batch_size=  batch_size,
+                     epochs=  epochs, 
                      verbose=1)
 
 plot_learning_curves(history)
@@ -74,7 +76,7 @@ score = model.evaluate(X_test, y_test, verbose=0)
 
 print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
-print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
+#print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
 '''
 #Intentamos estimar los puntos de test

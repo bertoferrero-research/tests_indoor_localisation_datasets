@@ -5,6 +5,7 @@ import pickle
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 
 #region Carga de datos
 def load_training_data(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False):
@@ -39,7 +40,7 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
     #Devolvemos
     return X_train, y_train, X_test, y_test
 
-def load_training_data_inverse(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False, macs_as_one_hot: bool=False):
+def load_training_data_inverse(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
     '''
     Devuelve los datos de entrenamiento y test preparados para entrenar la predicción de posicion a rssi.
     La salida para X contendrá tres columnas, pos_x, pos_y y mac
@@ -52,44 +53,38 @@ def load_training_data_inverse(training_file: str, test_file: str, scaler_file: 
     sensors = X_train.columns.to_list()
     sensors.sort()
     train_data = []
-    for index, row in y_train.iterrows():
-        for i in range(len(sensors)):
-            sensor = sensors[i]
-            train_data.append({
-                'pos_x': row['pos_x'],
-                'pos_y': row['pos_y'],
-                'sensor_mac': (i if macs_as_one_hot else sensor),
-                'rssi': X_train[sensor][index]
-            })
+    for X, y in [[X_train, y_train], [X_test, y_test]]:
+        for index, row in y.iterrows():
+            for i in range(len(sensors)):
+                sensor = sensors[i]
+                train_data.append({
+                    'pos_x': row['pos_x'],
+                    'pos_y': row['pos_y'],
+                    'sensor_mac': i,
+                    'rssi': X[sensor][index]
+                })
     train_data = pd.DataFrame(train_data)
+
+    #Convertimos los dtype
+    train_data['pos_x'] = pd.to_numeric(train_data['pos_x'], downcast='float')
+    train_data['pos_y'] = pd.to_numeric(train_data['pos_y'], downcast='float')
+    train_data['sensor_mac'] = pd.to_numeric(train_data['sensor_mac'], downcast='integer')
+    train_data['rssi'] = pd.to_numeric(train_data['rssi'], downcast='float')
+
+    #Dividimos train y test
+    train_data, test_data = train_test_split(train_data, test_size=0.2)
+
     X_train = train_data[['pos_x', 'pos_y', 'sensor_mac']]
-    y_train = train_data['rssi']
-
-    test_data = []
-    for index, row in y_test.iterrows():
-        for i in range(len(sensors)):
-            sensor = sensors[i]
-            test_data.append({
-                'pos_x': row['pos_x'],
-                'pos_y': row['pos_y'],
-                'sensor_mac': (i if macs_as_one_hot else sensor),
-                'rssi': X_test[sensor][index]
-            })
-    test_data = pd.DataFrame(test_data)
+    y_train = train_data[['rssi']]
     X_test = test_data[['pos_x', 'pos_y', 'sensor_mac']]
-    y_test = test_data['rssi']
+    y_test = test_data[['rssi']]
 
-    #Convertimos a one-hot
-    if macs_as_one_hot:
-        X_train_copy = X_train.copy()
-        X_train_copy['sensor_mac'] = X_train['sensor_mac'].astype('category')
-        X_train = X_train_copy
-        X_test_copy = X_test.copy()
-        X_test_copy['sensor_mac'] = X_test['sensor_mac'].astype('category')
-        X_test = X_test_copy
+    if separate_mac_and_pos:
+        X_train = [X_train[['pos_x', 'pos_y']], X_train[['sensor_mac']]]
+        X_test = [X_test[['pos_x', 'pos_y']], X_test[['sensor_mac']]]
     
     #Devolvemos
-    return X_train, y_train, X_test, y_test
+    return X_train, y_train, X_test, y_test, sensors
 
 def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Cargamos el fichero
