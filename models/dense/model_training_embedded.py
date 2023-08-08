@@ -27,7 +27,7 @@ model_file = script_dir+'/files/model_embedded.h5'
 #Hiperparámetros
 embedding_size = 10
 batch_size = 1500
-epochs = 50
+epochs = 25
 
 
 #Cargamos los ficheros
@@ -54,7 +54,7 @@ flatten_macs = Flatten()(macs_embedding)
 concat = concatenate([input_rssi, flatten_macs])
 
 #Capas densas
-dense_layer = Dense(64, activation='relu')(concat)
+dense_layer = Dense(128, activation='relu')(concat)
 
 #Salida
 output = Dense(2, activation='linear')(dense_layer)
@@ -78,20 +78,20 @@ score = model.evaluate([X_test,sensors_int_test], y_test, verbose=0)
 print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
 
-'''
-Intentamos estimar los puntos de test
-X_test_sample = X_train#[:5000]
-y_test_sample = y_train#[:5000]
-prediction = model.predict(X_test_sample)
+
+#Intentamos estimar los puntos de test
+X_test_sample = X_train[:500]
+y_test_sample = y_train[:500]
+prediction = model.predict([X_test_sample, np.tile(sensors_int, (len(X_test_sample), 1))])
 y_pred = pd.DataFrame(prediction, columns=['pos_x', 'pos_y'])
 #Desescalamos
 y_test_sample = descale_dataframe(y_test_sample)
 y_pred = descale_dataframe(y_pred)
 
 plt.plot(y_test_sample['pos_y'].values, y_test_sample['pos_x'].values, 'go-', label='Real', linewidth=1)
-#plt.plot(y_pred['pos_y'].values, y_pred['pos_x'].values, 'ro-', label='Calculada', linewidth=1)
+plt.plot(y_pred['pos_y'].values, y_pred['pos_x'].values, 'ro-', label='Calculada', linewidth=1)
 plt.show()
-'''
+
 
 #Guardamos el modelo
 if os.path.exists(model_file):
