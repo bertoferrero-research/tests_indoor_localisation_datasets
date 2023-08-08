@@ -19,18 +19,7 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
 
     #Escalamos
     if scaler_file is not None:
-        scaler = StandardScaler()
-        scaler.fit(X_train)
-        with open(scaler_file, 'wb') as scalerFile:
-            pickle.dump(scaler, scalerFile)
-            scalerFile.close()
-
-        X_train_scaled = X_train.copy()        
-        X_train_scaled[X_train.columns] = scaler.transform(X_train)
-        X_train = X_train_scaled
-        X_test_scaled = X_test.copy()        
-        X_test_scaled[X_test.columns] = scaler.transform(X_test)
-        X_test = X_test_scaled
+        X_train, X_test = scale_X_training(scaler_file, X_train, X_test)
 
     #Agrupamos los valores de X en un mapa 2D
     if group_x_2dmap:
@@ -40,14 +29,14 @@ def load_training_data(training_file: str, test_file: str, scaler_file: str=None
     #Devolvemos
     return X_train, y_train, X_test, y_test
 
-def load_training_data_inverse(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
+def load_training_data_inverse(training_file: str, test_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
     '''
     Devuelve los datos de entrenamiento y test preparados para entrenar la predicción de posicion a rssi.
     La salida para X contendrá tres columnas, pos_x, pos_y y mac
     La salida para y contendrá el valor rssi correspondiente
     '''
     #Recogemos los valores originales
-    X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, scaler_file, include_pos_z, scale_y, group_x_2dmap, remove_not_full_rows)
+    X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, None, include_pos_z, scale_y, group_x_2dmap, remove_not_full_rows)
 
     #Acumulamos los datos en el formato nuevo
     sensors = X_train.columns.to_list()
@@ -73,11 +62,13 @@ def load_training_data_inverse(training_file: str, test_file: str, scaler_file: 
 
     #Dividimos train y test
     train_data, test_data = train_test_split(train_data, test_size=0.2)
-
     X_train = train_data[['pos_x', 'pos_y', 'sensor_mac']]
     y_train = train_data[['rssi']]
     X_test = test_data[['pos_x', 'pos_y', 'sensor_mac']]
     y_test = test_data[['rssi']]
+
+    #Escalamos el rssi
+    y_train, y_test = scale_X_training(scaler_file, y_train, y_test)
 
     if separate_mac_and_pos:
         X_train = [X_train[['pos_x', 'pos_y']], X_train[['sensor_mac']]]
@@ -95,16 +86,52 @@ def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: 
 
     #Escalamos
     if scaler_file is not None:
-        with open(scaler_file, 'rb') as scalerFile:
-            scaler = pickle.load(scalerFile)
-            scalerFile.close()
-
-        X_scaled = X.copy()        
-        X_scaled[X.columns] = scaler.transform(X)
-        X = X_scaled   
+        X = scale_X_track(scaler_file, X)
 
     #Devolvemos
     return X, y
+
+def load_real_track_data_inverse(track_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
+    '''
+    Devuelve los datos de entrenamiento y test preparados para entrenar la predicción de posicion a rssi.
+    La salida para X contendrá tres columnas, pos_x, pos_y y mac
+    La salida para y contendrá el valor rssi correspondiente
+    '''
+    #Recogemos los valores originales
+    X, y = load_real_track_data(track_file, None, include_pos_z, scale_y, remove_not_full_rows)
+
+    #Acumulamos los datos en el formato nuevo
+    sensors = X.columns.to_list()
+    sensors.sort()
+    data = []
+    for index, row in y.iterrows():
+        for i in range(len(sensors)):
+            sensor = sensors[i]
+            data.append({
+                'pos_x': row['pos_x'],
+                'pos_y': row['pos_y'],
+                'sensor_mac': i,
+                'rssi': X[sensor][index]
+            })
+    data = pd.DataFrame(data)
+
+    #Convertimos los dtype
+    data['pos_x'] = pd.to_numeric(data['pos_x'], downcast='float')
+    data['pos_y'] = pd.to_numeric(data['pos_y'], downcast='float')
+    data['sensor_mac'] = pd.to_numeric(data['sensor_mac'], downcast='integer')
+    data['rssi'] = pd.to_numeric(data['rssi'], downcast='float')
+
+    X = data[['pos_x', 'pos_y', 'sensor_mac']]
+    y = data[['rssi']]
+
+    #Escalamos el rssi
+    y = scale_X_track(scaler_file, y)
+
+    if separate_mac_and_pos:
+        X = [X[['pos_x', 'pos_y']], X[['sensor_mac']]]
+    
+    #Devolvemos
+    return X, y, sensors
 
 def prepare_data(data, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Eliminamos las filas que no tienen todos los datos
@@ -200,6 +227,33 @@ def group_rssi_2dmap(data: pd.DataFrame, default_empty_value: int=-200):
 #endregion
 
 #region escalado de datos
+
+def scale_X_training(scaler_file: str, X_train, X_test):
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+    with open(scaler_file, 'wb') as scalerFile:
+        pickle.dump(scaler, scalerFile)
+        scalerFile.close()
+
+    X_train_scaled = X_train.copy()        
+    X_train_scaled[X_train.columns] = scaler.transform(X_train)
+    X_train = X_train_scaled
+    X_test_scaled = X_test.copy()        
+    X_test_scaled[X_test.columns] = scaler.transform(X_test)
+    X_test = X_test_scaled
+
+    return X_train, X_test
+
+def scale_X_track(scaler_file: str, X):
+    with open(scaler_file, 'rb') as scalerFile:
+        scaler = pickle.load(scalerFile)
+        scalerFile.close()
+
+    X_scaled = X.copy()        
+    X_scaled[X.columns] = scaler.transform(X)
+    X = X_scaled   
+
+    return X
 
 def get_scaler_pos_x():
     """
