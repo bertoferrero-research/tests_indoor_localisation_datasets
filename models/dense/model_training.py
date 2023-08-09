@@ -47,13 +47,13 @@ print("Tamaño de la capa oculta: "+str(hiddenLayerLength))
 input = tf.keras.layers.Input(shape=inputlength)
 #x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
+x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(x)
 #x = tf.keras.layers.Dropout(0.2)(x)
-x = tf.keras.layers.Dense(outputlength, activation='linear')(x)
 output = tf.keras.layers.Dense(outputlength, activation='linear')(x)
 #output = tf.keras.layers.Dropout(0.2)(x)
 model = tf.keras.models.Model(inputs=input, outputs=output)
 
-model.compile(loss='mae', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
+model.compile(loss='mse', optimizer='adam', metrics=['accuracy','mse','mae'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
 #comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
 #Seguir luchando por bajar el accuracy en regresion no es buena idea https://stats.stackexchange.com/questions/352036/why-is-accuracy-not-a-good-measure-for-regression-models
 print(model.summary())
@@ -71,7 +71,6 @@ score = model.evaluate(X_test, y_test, verbose=0)
 
 print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
-print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
 '''
 #Intentamos estimar los puntos de test

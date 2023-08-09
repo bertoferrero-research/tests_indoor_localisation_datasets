@@ -27,7 +27,7 @@ model_file = script_dir+'/files/model_embedded.h5'
 #Hiperparámetros
 embedding_size = 10
 batch_size = 1500
-epochs = 25
+epochs = 50
 
 
 #Cargamos los ficheros
@@ -46,7 +46,7 @@ input_rssi = Input(shape=X_train.shape[1], name='input_rssi')
 input_macs = Input(shape=(len(sensors),), name='input_macs')
 
 #Capa de embedding
-embedding_size = 8
+embedding_size = 64
 macs_embedding = Embedding(input_dim=len(sensors), output_dim=embedding_size, name='macs_embedding')(input_macs)
 
 #Concatenamos las entradas
@@ -55,6 +55,9 @@ concat = concatenate([input_rssi, flatten_macs])
 
 #Capas densas
 dense_layer = Dense(128, activation='relu')(concat)
+dense_layer = Dense(128, activation='relu')(dense_layer)
+dense_layer = Dense(64, activation='relu')(dense_layer)
+dense_layer = Dense(32, activation='relu')(dense_layer)
 
 #Salida
 output = Dense(2, activation='linear')(dense_layer)
