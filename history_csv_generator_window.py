@@ -11,9 +11,7 @@ import math
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 sensor_filtering_tipe = 'tss'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
 fingerprint_history_folder = script_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_history_train_file = script_dir+'/dataset_processed_csv/fingerprint_history_train_window_'+sensor_filtering_tipe+'.csv'                                  #Salida del csv de entrenamiento
-fingerprint_history_test_file = script_dir+'/dataset_processed_csv/fingerprint_history_test_window_'+sensor_filtering_tipe+'.csv'                                    #Salida del csv de tests
-test_data_rate = .2                                                                                 #Porcentaje de filas por posicion a volcar en el archivo de test
+fingerprint_history_file = script_dir+'/dataset_processed_csv/fingerprint_history_window_'+sensor_filtering_tipe+'.csv'                                             #Salida del csv de tests
 sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
 sensors_mac = []                                                                                    #Extraido de los ficheros
 regex_file_position = r"(\d+\.\d+_\d+\.\d+_\d+\.\d+)"                                               #regex para extraer la posición del sensor del nombre del fichero
@@ -124,12 +122,8 @@ for first_sensor_file in first_sensor_files:
     #Ponemos pos_x, pos_y y pos_z al principio
     data_position = data_position[['timestamp', 'pos_x', 'pos_y', 'pos_z'] + sensors_mac.tolist()]
 
-    #determinamos el punto de corte en base al ratio de test
-    train_test_index = math.floor(len(data_position)*test_data_rate)
-
     #Escribimos en el csv de salida
-    data_position[:-train_test_index].to_csv(fingerprint_history_train_file, mode='a', header=not os.path.exists(fingerprint_history_train_file), index=False)
-    data_position[-train_test_index:].to_csv(fingerprint_history_test_file , mode='a', header=not os.path.exists(fingerprint_history_test_file), index=False)
+    data_position.to_csv(fingerprint_history_file, mode='a', header=not os.path.exists(fingerprint_history_file), index=False)
 
         
 

@@ -8,50 +8,42 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 #region Carga de datos
-def load_training_data(training_file: str, test_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False):
+def load_training_data(training_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Cargamos los ficheros
     train_data = pd.read_csv(training_file)
-    test_data = pd.read_csv(test_file)
 
     #Preparamos los datos
-    X_train, y_train = prepare_data(train_data, include_pos_z, scale_y, remove_not_full_rows)
-    X_test, y_test = prepare_data(test_data, include_pos_z, scale_y, remove_not_full_rows)
+    X, y = prepare_data(train_data, include_pos_z, scale_y, remove_not_full_rows)
 
     #Escalamos
     if scaler_file is not None:
-        X_train, X_test = scale_X_training(scaler_file, X_train, X_test)
-
-    #Agrupamos los valores de X en un mapa 2D
-    if group_x_2dmap:
-        X_train = group_rssi_2dmap(X_train)
-        X_test = group_rssi_2dmap(X_test)
+        X = scale_RSSI_training(scaler_file, X)
 
     #Devolvemos
-    return X_train, y_train, X_test, y_test
+    return X, y
 
-def load_training_data_inverse(training_file: str, test_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, group_x_2dmap: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
+def load_training_data_inverse(training_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
     '''
     Devuelve los datos de entrenamiento y test preparados para entrenar la predicción de posicion a rssi.
     La salida para X contendrá tres columnas, pos_x, pos_y y mac
     La salida para y contendrá el valor rssi correspondiente
     '''
     #Recogemos los valores originales
-    X_train, y_train, X_test, y_test = load_training_data(training_file, test_file, None, include_pos_z, scale_y, group_x_2dmap, remove_not_full_rows)
+    X, y = load_training_data(training_file, test_file, None, include_pos_z, scale_y, remove_not_full_rows)
 
     #Acumulamos los datos en el formato nuevo
-    sensors = X_train.columns.to_list()
+    sensors = X.columns.to_list()
     sensors.sort()
     train_data = []
-    for X, y in [[X_train, y_train], [X_test, y_test]]:
-        for index, row in y.iterrows():
-            for i in range(len(sensors)):
-                sensor = sensors[i]
-                train_data.append({
-                    'pos_x': row['pos_x'],
-                    'pos_y': row['pos_y'],
-                    'sensor_mac': i,
-                    'rssi': X[sensor][index]
-                })
+    for index, row in y.iterrows():
+        for i in range(len(sensors)):
+            sensor = sensors[i]
+            train_data.append({
+                'pos_x': row['pos_x'],
+                'pos_y': row['pos_y'],
+                'sensor_mac': i,
+                'rssi': X[sensor][index]
+            })
     train_data = pd.DataFrame(train_data)
 
     #Convertimos los dtype
@@ -60,22 +52,19 @@ def load_training_data_inverse(training_file: str, test_file: str, scaler_file: 
     train_data['sensor_mac'] = pd.to_numeric(train_data['sensor_mac'], downcast='integer')
     train_data['rssi'] = pd.to_numeric(train_data['rssi'], downcast='float')
 
-    #Dividimos train y test
-    train_data, test_data = train_test_split(train_data, test_size=0.2)
-    X_train = train_data[['pos_x', 'pos_y', 'sensor_mac']]
-    y_train = train_data[['rssi']]
-    X_test = test_data[['pos_x', 'pos_y', 'sensor_mac']]
-    y_test = test_data[['rssi']]
+    #Dividimos X e y
+    X = train_data[['pos_x', 'pos_y', 'sensor_mac']]
+    y = train_data[['rssi']]
 
     #Escalamos el rssi
-    y_train, y_test = scale_X_training(scaler_file, y_train, y_test)
+    y = scale_RSSI_training(scaler_file, y)
 
+    #Separamos mac y pos
     if separate_mac_and_pos:
-        X_train = [X_train[['pos_x', 'pos_y']], X_train[['sensor_mac']]]
-        X_test = [X_test[['pos_x', 'pos_y']], X_test[['sensor_mac']]]
+        X = [X[['pos_x', 'pos_y']], X[['sensor_mac']]]
     
     #Devolvemos
-    return X_train, y_train, X_test, y_test, sensors
+    return X, y, sensors
 
 def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Cargamos el fichero
@@ -86,7 +75,7 @@ def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: 
 
     #Escalamos
     if scaler_file is not None:
-        X = scale_X_track(scaler_file, X)
+        X = scale_RSSI_track(scaler_file, X)
 
     #Devolvemos
     return X, y
@@ -125,7 +114,7 @@ def load_real_track_data_inverse(track_file: str, scaler_file: str, include_pos_
     y = data[['rssi']]
 
     #Escalamos el rssi
-    y = scale_X_track(scaler_file, y)
+    y = scale_RSSI_track(scaler_file, y)
 
     if separate_mac_and_pos:
         X = [X[['pos_x', 'pos_y']], X[['sensor_mac']]]
@@ -197,54 +186,24 @@ def imputing_predict_na_data(data: pd.DataFrame):
     return data
 
 
-def group_rssi_2dmap(data: pd.DataFrame, default_empty_value: int=-200):
-    #Definimos el array de la matriz a extrapolar, sacada de los mapas del dataset
-    #  0  12  21  0
-    #  11 10  20  22
-    #  42 40  30  31
-    #  0  41  32  0
-    rssi_map = [
-        [None, '000000000102', '000000000201', None],
-        ['000000000101', 'b827eb4521b4', 'b827eb917e19', '000000000202'],
-        ['000000000402', 'b827ebfd7811', 'b827ebf7d096', '000000000301'],
-        [None, '000000000401', '000000000302', None]
-    ]
-    final_data = []
-    #Por cada fila del dataset creamos un array con los valores de rssi en el mismo índice que la matriz rssi_map
-    for index, row in data.iterrows():
-        rssi = np.ndarray((len(rssi_map), len(rssi_map[0])))
-        for i in range(len(rssi_map)):
-            rssi_map_row = rssi_map[i]
-            for j in range(len(rssi_map_row)):
-                rssi_map_col = rssi_map_row[j]
-                rssi_value = default_empty_value
-                if rssi_map_col is not None:
-                    rssi_value = row[rssi_map_col]
-                rssi[i][j] = rssi_value
-        final_data.append(rssi)
-    #Devolvemos
-    return np.array(final_data)
 #endregion
 
 #region escalado de datos
 
-def scale_X_training(scaler_file: str, X_train, X_test):
+def scale_RSSI_training(scaler_file: str, X_data):
     scaler = StandardScaler()
-    scaler.fit(X_train)
+    scaler.fit(X_data)
     with open(scaler_file, 'wb') as scalerFile:
         pickle.dump(scaler, scalerFile)
         scalerFile.close()
 
-    X_train_scaled = X_train.copy()        
-    X_train_scaled[X_train.columns] = scaler.transform(X_train)
-    X_train = X_train_scaled
-    X_test_scaled = X_test.copy()        
-    X_test_scaled[X_test.columns] = scaler.transform(X_test)
-    X_test = X_test_scaled
+    X_data_scaled = X_data.copy()        
+    X_data_scaled[X_data.columns] = scaler.transform(X_data)
+    X_data = X_data_scaled
 
-    return X_train, X_test
+    return X_data
 
-def scale_X_track(scaler_file: str, X):
+def scale_RSSI_track(scaler_file: str, X):
     with open(scaler_file, 'rb') as scalerFile:
         scaler = pickle.load(scalerFile)
         scalerFile.close()
