@@ -307,7 +307,56 @@ def descale_dataframe(data: pd.DataFrame):
 #endregion
 
 
-#region dibujado
+#region Analisis y dibujado
+
+def cross_val_score_multi_input(model:tf.keras.Model, X, y, cv, loss, optimizer, metrics, batch_size:int, epochs:int, verbose = 0):
+    '''
+    Función que realiza cross validation de un modelo con múltiples entradas
+    Args:
+        model (keras.model): modelo a entrenar
+        X (list): lista de arrays de entrada
+        y (array): array de salida
+        cv (sklearn.model_selection.KFold): objeto de validación cruzada
+        batch_size (int): tamaño del batch
+        epochs (int): número de épocas
+        verbose (int, optional): nivel de verbosidad. Defaults to 0.
+    Returns:
+        np.array: lista de scores
+    '''
+    #Basado en https://stackoverflow.com/questions/59350224/crossvalidation-of-keras-model-with-multiply-inputs-with-scikit-learn
+    cv_score = []
+    for i, (train, test) in enumerate(cv.split(X[0],y)): #Las dimensiones deben ser siempre las mismas. seguimos el ejemplo y usamso el primer índice
+        #Clonamos el modelo para resetear los pesos
+        model_clone = tf.keras.models.clone_model(model)
+        model_clone.compile(loss=loss, optimizer=optimizer, metrics=[metrics] )
+
+        #Preparamos la entrada X para train y test
+        X_train = []
+        X_test = []
+        for j in range(len(X)):
+            if type(X[j]) == pd.DataFrame:
+                X_train.append(X[j].iloc[train])
+                X_test.append(X[j].iloc[test])
+            else:                
+                X_train.append(X[j][train])
+                X_test.append(X[j][test])
+        
+        #Ahora las Y
+        if type(y) == pd.DataFrame:
+            y_train = y.iloc[train]
+            y_test = y.iloc[test]
+        else:
+            y_train = y[train]
+            y_test = y[test]
+
+        #Entrenamos el modelo y acumulamos el score
+        print("Running Fold", i+1)
+        model_clone.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, verbose=verbose)
+        result = model_clone.evaluate(X_test, y_test, verbose=verbose)
+        cv_score.append(result[0]) #0 es el loss siempre, si hay más de una métrica, se incrementa el índice
+        tf.keras.backend.clear_session()
+    return np.array(cv_score)
+
 def plot_learning_curves(hist):
   plt.plot(hist.history['loss'])
   plt.plot(hist.history['val_loss'])

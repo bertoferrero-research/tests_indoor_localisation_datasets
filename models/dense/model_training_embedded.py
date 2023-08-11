@@ -20,6 +20,7 @@ from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_dataframe
+from lib.trainingcommon import cross_val_score_multi_input
 
 
 #Variables globales
@@ -36,7 +37,7 @@ epochs = 50
 loss = 'mse' #'mse'
 optimizer = 'adam'
 cross_val_splits = 10     #Cantidad de divisiones a realizar en el grupo de entrenamiento para la validación cruzada
-cross_val_scoring = 'neg_mean_squared_error' #'neg_mean_squared_error' #Valor para el scoring de la validación cruzada
+cross_val_scoring = 'mse' #'neg_mean_squared_error' #Valor para el scoring de la validación cruzada
 
 #Cargamos la semilla de los generadores aleatorios
 np.random.seed(random_seed)
@@ -81,9 +82,7 @@ model.compile(loss=loss, optimizer=optimizer, metrics=[loss] )
 
 #Realizamos evaluación cruzada
 kf = KFold(n_splits=cross_val_splits, shuffle=True)
-estimator = KerasRegressor(build_fn=model, optimizer=optimizer, loss=loss, metrics=[loss], epochs=epochs, batch_size=batch_size, verbose=0)
-#TODO seguir con esto y realizar mi propio entrenador: https://stackoverflow.com/questions/59350224/crossvalidation-of-keras-model-with-multiply-inputs-with-scikit-learn
-cross_val_scores = cross_val_score(estimator, [X, sensors_int_array], y, cv=kf, scoring=cross_val_scoring)
+cross_val_scores = cross_val_score_multi_input(model, [X, sensors_int_array], y, loss=loss, optimizer=optimizer, metrics=cross_val_scoring, cv=kf, batch_size=batch_size, epochs=epochs, verbose=0)
 
 #Entrenamos
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
