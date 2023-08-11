@@ -10,7 +10,10 @@ import matplotlib.pyplot as plt
 import math
 import os.path
 import pickle
+import random
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import KFold
+from sklearn.model_selection import train_test_split
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 sys.path.insert(1, script_dir+'/../../')
@@ -18,28 +21,36 @@ from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data_inverse
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_dataframe
+from lib.trainingcommon import cross_val_score_multi_input
 
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-training_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_train_window_median.csv'
-test_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_test_window_median.csv'
+data_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_window_median.csv'
 scaler_file = script_dir+'/files/scaler_inverse.pkl'
 model_file = script_dir+'/files/model_inverse.h5'
+random_seed = 42
 
 #Hiperparámetros
 embedding_size = 12
 batch_size = 1500
 epochs = 150
+loss = 'mse' #'mse'
+optimizer = 'adam'
+cross_val_splits = 10     #Cantidad de divisiones a realizar en el grupo de entrenamiento para la validación cruzada
+cross_val_scoring = 'mse' #'neg_mean_squared_error' #Valor para el scoring de la validación cruzada
 
+#Cargamos la semilla de los generadores aleatorios
+np.random.seed(random_seed)
+random.seed(42)
 
 #Cargamos los ficheros
-X_train, y_train, X_test, y_test, sensors_mapping = load_training_data_inverse(training_file, test_file, scaler_file, False, True, False, True, separate_mac_and_pos=True)
+X, y, sensors_mapping = load_training_data_inverse(data_file, scaler_file, False, True, True, separate_mac_and_pos=True)
 
 #####Construimos el modelo
 #Capas de entrada
-input_positions = Input(X_train[0].shape[1], name='input_positions')
-input_mac = Input(X_train[1].shape[1], name='input_mac')
+input_positions = Input(X[0].shape[1], name='input_positions')
+input_mac = Input(X[1].shape[1], name='input_mac')
 
 #Capa de embedding
 embedded_mac = Embedding(input_dim=len(sensors_mapping), output_dim=embedding_size, name='embedded_mac')(input_mac)
@@ -58,25 +69,22 @@ output_layer = Dense(1, activation='linear')(hidden_layer)
 
 #Creamos el modelo
 model = Model(inputs=[input_positions, input_mac], outputs=output_layer)
-model.compile(loss='mse', optimizer='adam', metrics=['mse'] )
-#comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
-#Seguir luchando por bajar el accuracy en regresion no es buena idea https://stats.stackexchange.com/questions/352036/why-is-accuracy-not-a-good-measure-for-regression-models
-print(model.summary())
+model.compile(loss=loss, optimizer=optimizer, metrics=[loss] )
+
+#Realizamos evaluación cruzada
+kf = KFold(n_splits=cross_val_splits, shuffle=True)
+cross_val_scores = cross_val_score_multi_input(model, X, y, loss=loss, optimizer=optimizer, metrics=cross_val_scoring, cv=kf, batch_size=batch_size, epochs=epochs, verbose=1)
 
 #Entrenamos
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  batch_size,
                      epochs=  epochs, 
                      verbose=1)
 
-plot_learning_curves(history)
-
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
 
-print('Resultado en el test set:')
-print('Test loss: {:0.4f}'.format(score[0]))
-#print('Test accuracy: {:0.2f}%'.format(score[1] * 100))
 
 '''
 #Intentamos estimar los puntos de test
@@ -97,3 +105,18 @@ plt.show()
 if os.path.exists(model_file):
   os.remove(model_file)
 model.save(model_file)
+
+#Sacamos valoraciones
+print("-- Resumen del modelo:")
+print(model.summary())
+
+print("-- Evaluación cruzada")
+print("Puntuaciones de validación cruzada:", cross_val_scores)
+print("Puntuación media:", cross_val_scores.mean())
+print("Desviación estándar:", cross_val_scores.std())
+
+print("-- Entrenamiento final")
+print('Resultado en el test set:')
+print('Test loss: {:0.4f}'.format(score[0]))
+
+plot_learning_curves(history)

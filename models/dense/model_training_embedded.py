@@ -7,9 +7,7 @@ import os.path
 import pickle
 import random
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
 from keras.models import Model
 from keras.layers import Input, Embedding, Dense, concatenate, Flatten
@@ -31,7 +29,7 @@ model_file = script_dir+'/files/model_embedded.h5'
 random_seed = 42
 
 #Hiperparámetros
-embedding_size = 10
+embedding_size = 64
 batch_size = 1500
 epochs = 50
 loss = 'mse' #'mse'
@@ -60,7 +58,6 @@ input_rssi = Input(shape=X.shape[1], name='input_rssi')
 input_macs = Input(shape=(len(sensors),), name='input_macs')
 
 #Capa de embedding
-embedding_size = 64
 macs_embedding = Embedding(input_dim=len(sensors), output_dim=embedding_size, name='macs_embedding')(input_macs)
 
 #Concatenamos las entradas
@@ -97,8 +94,6 @@ history = model.fit([X_train,sensors_int_train], y_train, validation_data=([X_te
 # Evaluamos usando el test set
 score = model.evaluate([X_test,sensors_int_test], y_test, verbose=0)
 
-print('Resultado en el test set:')
-print('Test loss: {:0.4f}'.format(score[0]))
 
 '''
 #Intentamos estimar los puntos de test

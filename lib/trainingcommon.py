@@ -29,7 +29,7 @@ def load_training_data_inverse(training_file: str, scaler_file: str, include_pos
     La salida para y contendrá el valor rssi correspondiente
     '''
     #Recogemos los valores originales
-    X, y = load_training_data(training_file, test_file, None, include_pos_z, scale_y, remove_not_full_rows)
+    X, y = load_training_data(training_file, None, include_pos_z, scale_y, remove_not_full_rows)
 
     #Acumulamos los datos en el formato nuevo
     sensors = X.columns.to_list()
