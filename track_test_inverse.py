@@ -1,3 +1,7 @@
+'''
+Analiza la desviación entre la estimación del valor rssi en una posición con el valor auténtico
+'''
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
