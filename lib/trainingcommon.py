@@ -245,6 +245,17 @@ def scale_pos_x(pos_x: pd.Series):
     scaler = get_scaler_pos_x()
     return scaler.transform(pos_x.values.reshape(-1, 1)).flatten()
 
+def scale_pos_x_single(pos_x: float):
+    """
+    Escala la posición x
+    Args:
+        pos_x (float): posición x
+    Returns:
+        float: posición x escalada
+    """
+    scaler = get_scaler_pos_x()
+    return scaler.transform([[pos_x]])[0][0]
+
 def scale_pos_y(pos_y: pd.Series):
     """
     Escala la posición y
@@ -255,6 +266,17 @@ def scale_pos_y(pos_y: pd.Series):
     """
     scaler = get_scaler_pos_y()
     return scaler.transform(pos_y.values.reshape(-1, 1)).flatten()
+
+def scale_pos_y_single(pos_y: float):
+    """
+    Escala la posición y
+    Args:
+        pos_y (float): posición y
+    Returns:
+        float: posición y escalada
+    """
+    scaler = get_scaler_pos_y()
+    return scaler.transform([[pos_y]])[0][0]
 
 def scale_dataframe(data: pd.DataFrame):
     """

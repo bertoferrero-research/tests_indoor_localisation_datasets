@@ -12,15 +12,16 @@ from lib.filters.montecarlofilter import monte_carlo_filter
 from lib.filters.particlefilter import particle_filter
 
 #Configuración
-input_file_name = 'track_straight_01_all_sensors.mbd_window_median'
+input_file_name = 'track_1_rssi'#'track_straight_01_all_sensors.mbd_window_median'
+synthtetic_track = True#False
 model = 'dense'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True
 
 #Variables globales
-track_file = './dataset_processed_csv/'+input_file_name+'.csv'
-output_file = './prediction_output/'+model+'_'+input_file_name+'.csv'
+track_file = './dataset_processed_csv/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
+output_file = './prediction_output/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
 model_dir = './models/'+model
 scaler_file = model_dir+'/files/scaler.pkl'
 model_file = model_dir+'/files/model.h5'
