@@ -40,10 +40,10 @@ df.to_csv(output_file, index=False)
 
 #Mostramos la trayectoria
 
-plt.plot([0, 0, dim_y, dim_y, 0], [0, dim_x,  dim_x, 0, 0], 'go-', label='Real', linewidth=1)
+plt.plot([0, dim_x,  dim_x, 0, 0], [0, 0, dim_y, dim_y, 0], 'go-', label='Real', linewidth=1)
 plt.plot(
-    [0+margen, 0+margen, dim_y-margen, dim_y-margen, 0+margen],
     [0+margen, dim_x-margen, dim_x-margen, 0+margen, 0+margen],
+    [0+margen, 0+margen, dim_y-margen, dim_y-margen, 0+margen],
      'bo-', label='Real', linewidth=1)
-plt.plot(y, x, 'ro-', linewidth=1)
+plt.plot(x, y, 'ro-', linewidth=1)
 plt.show()
