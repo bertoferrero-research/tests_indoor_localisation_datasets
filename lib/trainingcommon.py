@@ -347,7 +347,8 @@ def cross_val_score_multi_input(model:tf.keras.Model, X, y, cv, loss, optimizer,
     '''
     #Basado en https://stackoverflow.com/questions/59350224/crossvalidation-of-keras-model-with-multiply-inputs-with-scikit-learn
     cv_score = []
-    for i, (train, test) in enumerate(cv.split(X[0],y)): #Las dimensiones deben ser siempre las mismas. seguimos el ejemplo y usamso el primer índice
+    #for i, (train, test) in enumerate(cv.split(X[0],y)):
+    for i, (train, test) in enumerate(cv.split(X,y)): #Las dimensiones deben ser siempre las mismas. seguimos el ejemplo y usamso el primer índice
         #Clonamos el modelo para resetear los pesos
         model_clone = tf.keras.models.clone_model(model)
         model_clone.compile(loss=loss, optimizer=optimizer, metrics=[metrics] )
@@ -355,6 +356,16 @@ def cross_val_score_multi_input(model:tf.keras.Model, X, y, cv, loss, optimizer,
         #Preparamos la entrada X para train y test
         X_train = []
         X_test = []
+        #for j in range(len(X)):
+        if type(X) == pd.DataFrame:
+            X_train.append(X.iloc[train])
+            X_test.append(X.iloc[test])
+        else:                
+            X_train.append(X[train])
+            X_test.append(X[test])
+
+        '''
+        
         for j in range(len(X)):
             if type(X[j]) == pd.DataFrame:
                 X_train.append(X[j].iloc[train])
@@ -362,6 +373,7 @@ def cross_val_score_multi_input(model:tf.keras.Model, X, y, cv, loss, optimizer,
             else:                
                 X_train.append(X[j][train])
                 X_test.append(X[j][test])
+                '''
         
         #Ahora las Y
         if type(y) == pd.DataFrame:

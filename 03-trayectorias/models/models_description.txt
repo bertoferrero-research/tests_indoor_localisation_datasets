@@ -1,0 +1,2 @@
+-- Modelo 1 --
+Modelo LSTM con secuencias de n elementos con 12 caracteristicas por elemento (las rssi directamente).
