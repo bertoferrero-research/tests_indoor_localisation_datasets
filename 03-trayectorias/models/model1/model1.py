@@ -18,7 +18,7 @@ from lib.trainingcommon import plot_learning_curves
 
 #Variables globales
 N = 3 #Elementos en la secuencia
-track_file = root_dir+'/preprocessed_inputs/synthetic_tracks/track_1_rssi.csv'
+track_file = root_dir+'/preprocessed_inputs/synthetic_tracks/track_1_rssi_12h.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 model_file = script_dir+'/files/model.h5'
 random_seed = 42
@@ -26,7 +26,7 @@ random_seed = 42
 #Hiperparámetros
 embedding_size = 12
 batch_size = 1500
-epochs = 250
+epochs = 100
 loss = 'mse' #'mse'
 optimizer = 'adam'
 #cross_val_splits = 10     #Cantidad de divisiones a realizar en el grupo de entrenamiento para la validación cruzada

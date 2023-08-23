@@ -6,7 +6,7 @@ import os.path
 import numpy as np
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 import sys
-sys.path.insert(1, script_dir+'/../')
+sys.path.insert(1, script_dir+'/../../')
 from lib.trajectories import generar_trayectoria
 from lib.trajectories import add_noise_to_track
 
@@ -17,7 +17,7 @@ output_file = script_dir+'/training_tracks/track_1.csv'
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 margen = 1
-duracion = 50*60#50
+duracion = 12*60*60#50
 velocidad_media = 0.3321928477776
 velocidad_maxima = 0.424265045
 velocidad_minima = 0.112329279
