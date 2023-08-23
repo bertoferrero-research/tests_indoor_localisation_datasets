@@ -5,38 +5,53 @@ import matplotlib.pyplot as plt
 import math
 import os.path
 import pickle
-from lib.trainingcommon import load_real_track_data
+import random
+import sys
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+root_dir = script_dir+'/../'
+sys.path.insert(1, root_dir)
+from lib.trainingcommon import load_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_pos_y
 from lib.filters.montecarlofilter import monte_carlo_filter
 from lib.filters.particlefilter import particle_filter
 
 #Configuración
-input_file_name = 'track_1_rssi'#'track_straight_01_all_sensors.mbd_window_median'
-synthtetic_track = True#False
+N = 3 #Elementos en la secuencia
+input_file_name = 'track_straight_01_all_sensors.mbd_window_median'#'track_1_rssi'
+synthtetic_track = False
 model = 'model1'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True
+random_seed = 42
 
 #Variables globales
-track_file = './dataset_processed_csv/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
-output_file = './prediction_output/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
-model_dir = './models/'+model
+track_file = root_dir+'/preprocessed_inputs/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
+output_file = script_dir+'/prediction_output/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
+model_dir = script_dir+'/models/'+model
 scaler_file = model_dir+'/files/scaler.pkl'
 model_file = model_dir+'/files/model.h5'
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
+#Cargamos la semilla de los generadores aleatorios
+np.random.seed(random_seed)
+random.seed(random_seed)
+
 
 
 #Preparamos los datos
-input_data, output_data = load_real_track_data(track_file, scaler_file, use_pos_z, scale_y, remove_not_full_rows)
-print(input_data)
+input_data, output_data = load_data(track_file, scaler_file, False, use_pos_z, scale_y, remove_not_full_rows)
 
-#Si el modelo es cnn, tenemos que darle una forma especial
-if model == 'cnn':
-  input_data = input_data.values.reshape(input_data.shape[0], input_data.shape[1], 1)
+#Realizamos las agrupaciones
+groupedX = []
+groupedy = []
+for i in range(N, len(input_data)):
+    groupedX.append(input_data.iloc[i-N:i])
+    groupedy.append(output_data.iloc[i])
+input_data = np.array(groupedX)
+output_data = np.array(groupedy)
 
 #Cargamos el modelo
 model = tf.keras.models.load_model(model_file)
@@ -57,12 +72,14 @@ print(predictions)
 #predictions = scaler.inverse_transform(predictions)
 
 #Componemos la salida
-output_data = output_data.to_numpy()
 output_list = []
 for index in range(0, len(predictions)):
+  predicted_index = index - N
+  if predicted_index < 0:
+    continue
   listrow = {
-    'predicted_x': predictions[index][0],
-    'predicted_y': predictions[index][1],
+    'predicted_x': predictions[predicted_index][0],
+    'predicted_y': predictions[predicted_index][1],
     #'predicted_z': predictions[index][2],
     'real_x': output_data[index][0],
     'real_y': output_data[index][1],

@@ -26,15 +26,15 @@ random_seed = 42
 #Hiperparámetros
 embedding_size = 12
 batch_size = 1500
-epochs = 150
+epochs = 250
 loss = 'mse' #'mse'
 optimizer = 'adam'
-cross_val_splits = 10     #Cantidad de divisiones a realizar en el grupo de entrenamiento para la validación cruzada
-cross_val_scoring = 'mse' #'neg_mean_squared_error' #Valor para el scoring de la validación cruzada
+#cross_val_splits = 10     #Cantidad de divisiones a realizar en el grupo de entrenamiento para la validación cruzada
+#cross_val_scoring = 'mse' #'neg_mean_squared_error' #Valor para el scoring de la validación cruzada
 
 #Cargamos la semilla de los generadores aleatorios
 np.random.seed(random_seed)
-random.seed(42)
+random.seed(random_seed)
 
 # ---- Preparación de los datos ---- #
 
@@ -53,7 +53,9 @@ y = np.array(groupedy)
 #Entrada
 input_model = tf.keras.layers.Input(shape=(X.shape[1], X.shape[2]))
 #Capas intermedias
-hidden_layer = tf.keras.layers.LSTM(128, activation='relu')(input_model)
+hidden_layer = tf.keras.layers.LSTM(128, activation='relu', return_sequences=True)(input_model)
+hidden_layer = tf.keras.layers.LSTM(64, activation='relu', return_sequences=True)(hidden_layer)
+hidden_layer = tf.keras.layers.LSTM(32, activation='relu')(hidden_layer)
 #Salida
 output_layer = tf.keras.layers.Dense(y.shape[1], activation='linear')(hidden_layer)
 
@@ -62,15 +64,16 @@ model = tf.keras.models.Model(inputs=input_model, outputs=output_layer)
 model.compile(loss=loss, optimizer=optimizer, metrics=[loss])
 
 #Realizamos evaluación cruzada
-kf = KFold(n_splits=cross_val_splits, shuffle=True)
-cross_val_scores = cross_val_score_multi_input(model, X, y, loss=loss, optimizer=optimizer, metrics=cross_val_scoring, cv=kf, batch_size=batch_size, epochs=epochs, verbose=1)
+#kf = KFold(n_splits=cross_val_splits, shuffle=True)
+#cross_val_scores = cross_val_score_multi_input(model, X, y, loss=loss, optimizer=optimizer, metrics=cross_val_scoring, cv=kf, batch_size=batch_size, epochs=epochs, verbose=1)
 
 #Entrenamos
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      batch_size=  batch_size,
                      epochs=  epochs, 
-                     verbose=1)
+                     verbose=1, 
+                     shuffle=False)
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
@@ -84,10 +87,10 @@ model.save(model_file)
 print("-- Resumen del modelo:")
 print(model.summary())
 
-print("-- Evaluación cruzada")
-print("Puntuaciones de validación cruzada:", cross_val_scores)
-print("Puntuación media:", cross_val_scores.mean())
-print("Desviación estándar:", cross_val_scores.std())
+#print("-- Evaluación cruzada")
+#print("Puntuaciones de validación cruzada:", cross_val_scores)
+#print("Puntuación media:", cross_val_scores.mean())
+#print("Desviación estándar:", cross_val_scores.std())
 
 print("-- Entrenamiento final")
 print('Resultado en el test set:')

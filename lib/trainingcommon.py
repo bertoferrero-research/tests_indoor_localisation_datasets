@@ -8,86 +8,31 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 #region Carga de datos
-def load_training_data(training_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
+def load_data(data_file: str, scaler_file: str=None, train_scaler_file: bool=False, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Cargamos los ficheros
-    train_data = pd.read_csv(training_file)
+    data = pd.read_csv(data_file)
 
     #Preparamos los datos
-    X, y = prepare_data(train_data, include_pos_z, scale_y, remove_not_full_rows)
+    X, y = prepare_data(data, include_pos_z, scale_y, remove_not_full_rows)
 
     #Escalamos
     if scaler_file is not None:
-        X = scale_RSSI_training(scaler_file, X)
+        if train_scaler_file:
+            X = scale_RSSI_training(scaler_file, X)
+        else:
+            X = scale_RSSI_track(scaler_file, X)
 
     #Devolvemos
     return X, y
 
-def load_training_data_inverse(training_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
+def load_data_inverse(data_file: str, scaler_file: str, train_scaler_file: bool=False, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
     '''
     Devuelve los datos de entrenamiento y test preparados para entrenar la predicción de posicion a rssi.
     La salida para X contendrá tres columnas, pos_x, pos_y y mac
     La salida para y contendrá el valor rssi correspondiente
     '''
     #Recogemos los valores originales
-    X, y = load_training_data(training_file, None, include_pos_z, scale_y, remove_not_full_rows)
-
-    #Acumulamos los datos en el formato nuevo
-    sensors = X.columns.to_list()
-    sensors.sort()
-    train_data = []
-    for index, row in y.iterrows():
-        for i in range(len(sensors)):
-            sensor = sensors[i]
-            train_data.append({
-                'pos_x': row['pos_x'],
-                'pos_y': row['pos_y'],
-                'sensor_mac': i,
-                'rssi': X[sensor][index]
-            })
-    train_data = pd.DataFrame(train_data)
-
-    #Convertimos los dtype
-    train_data['pos_x'] = pd.to_numeric(train_data['pos_x'], downcast='float')
-    train_data['pos_y'] = pd.to_numeric(train_data['pos_y'], downcast='float')
-    train_data['sensor_mac'] = pd.to_numeric(train_data['sensor_mac'], downcast='integer')
-    train_data['rssi'] = pd.to_numeric(train_data['rssi'], downcast='float')
-
-    #Dividimos X e y
-    X = train_data[['pos_x', 'pos_y', 'sensor_mac']]
-    y = train_data[['rssi']]
-
-    #Escalamos el rssi
-    y = scale_RSSI_training(scaler_file, y)
-
-    #Separamos mac y pos
-    if separate_mac_and_pos:
-        X = [X[['pos_x', 'pos_y']], X[['sensor_mac']]]
-    
-    #Devolvemos
-    return X, y, sensors
-
-def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
-    #Cargamos el fichero
-    track_data = pd.read_csv(track_file)
-
-    #Preparamos los datos
-    X, y = prepare_data(track_data, include_pos_z, scale_y, remove_not_full_rows)
-
-    #Escalamos
-    if scaler_file is not None:
-        X = scale_RSSI_track(scaler_file, X)
-
-    #Devolvemos
-    return X, y
-
-def load_real_track_data_inverse(track_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
-    '''
-    Devuelve los datos de entrenamiento y test preparados para entrenar la predicción de posicion a rssi.
-    La salida para X contendrá tres columnas, pos_x, pos_y y mac
-    La salida para y contendrá el valor rssi correspondiente
-    '''
-    #Recogemos los valores originales
-    X, y = load_real_track_data(track_file, None, include_pos_z, scale_y, remove_not_full_rows)
+    X, y = load_real_track_data(data_file, None, include_pos_z, scale_y, remove_not_full_rows)
 
     #Acumulamos los datos en el formato nuevo
     sensors = X.columns.to_list()
@@ -110,11 +55,15 @@ def load_real_track_data_inverse(track_file: str, scaler_file: str, include_pos_
     data['sensor_mac'] = pd.to_numeric(data['sensor_mac'], downcast='integer')
     data['rssi'] = pd.to_numeric(data['rssi'], downcast='float')
 
+    #Dividimos X e y
     X = data[['pos_x', 'pos_y', 'sensor_mac']]
     y = data[['rssi']]
 
     #Escalamos el rssi
-    y = scale_RSSI_track(scaler_file, y)
+    if train_scaler_file:
+        y = scale_RSSI_training(scaler_file, y)
+    else:
+        y = scale_RSSI_track(scaler_file, y)
 
     if separate_mac_and_pos:
         X = [X[['pos_x', 'pos_y']], X[['sensor_mac']]]
@@ -399,4 +348,24 @@ def plot_learning_curves(hist):
   plt.xlabel('Epoch')  
   plt.legend(['Conjunto de entrenamiento', 'Conjunto de validación'], loc='upper right')
   plt.show()
+#endregion
+
+#region Deprecateds
+
+def load_training_data(training_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
+    #Deprecated, usar load_data
+    return load_data(training_file, scaler_file, True, include_pos_z, scale_y, remove_not_full_rows)
+
+def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
+    #Deprecated, usar load_data
+    return load_data(training_file, scaler_file, False, include_pos_z, scale_y, remove_not_full_rows)
+
+
+def load_training_data_inverse(training_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
+    #Deprecated, usar load_data_inverse
+    return load_data_inverse(training_file, scaler_file, True, include_pos_z, scale_y, remove_not_full_rows, separate_mac_and_pos)
+
+def load_real_track_data_inverse(track_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
+    #Deprecated, usar load_data_inverse
+    return load_data_inverse(track_file, scaler_file, False, include_pos_z, scale_y, remove_not_full_rows, separate_mac_and_pos)
 #endregion
