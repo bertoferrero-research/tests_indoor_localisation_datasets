@@ -13,8 +13,6 @@ sys.path.insert(1, root_dir)
 from lib.trainingcommon import load_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_pos_y
-from lib.filters.montecarlofilter import monte_carlo_filter
-from lib.filters.particlefilter import particle_filter
 
 #Configuración
 N = 3 #Elementos en la secuencia

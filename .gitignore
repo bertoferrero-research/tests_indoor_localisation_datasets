@@ -1,3 +1,4 @@
 dataset/*
 *.pyc
 auto_model/*
+structured_data_regressor/*

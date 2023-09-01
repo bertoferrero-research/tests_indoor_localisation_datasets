@@ -358,7 +358,7 @@ def load_training_data(training_file: str, scaler_file: str=None, include_pos_z:
 
 def load_real_track_data(track_file: str, scaler_file: str=None, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
     #Deprecated, usar load_data
-    return load_data(training_file, scaler_file, False, include_pos_z, scale_y, remove_not_full_rows)
+    return load_data(track_file, scaler_file, False, include_pos_z, scale_y, remove_not_full_rows)
 
 
 def load_training_data_inverse(training_file: str, scaler_file: str, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
