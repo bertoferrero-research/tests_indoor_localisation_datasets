@@ -6,6 +6,7 @@ import math
 import os.path
 import pickle
 import random
+import autokeras as ak
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import  Model
@@ -48,38 +49,41 @@ X_train, X_test, y_train, y_test = train_test_split(X, X, test_size=0.2, random_
 # Entrada
 input_sensors = Input(shape=(X.shape[1], 1)) 
 # Encoder...
-x = Conv1D(64, 3, activation='relu', padding='same')(input_sensors)
-x = MaxPooling1D(2, padding='same')(x)
-x = Conv1D(128, 2, activation='relu', padding='same')(x)
-x = MaxPooling1D(2, padding='same')(x)
-encoded = Conv1D(256, 2, activation='relu', padding='same')(x)
-#encoded = MaxPooling1D(1, padding='same')(x) #No realiza ningún cambio
+encoded = Conv1D(64, 3, activation='relu', padding='same')(input_sensors)
+encoded = MaxPooling1D(2, padding='same')(encoded)
+encoded = Conv1D(128, 2, activation='relu', padding='same')(encoded)
+encoded = MaxPooling1D(2, padding='same')(encoded)
+encoded = Conv1D(256, 2, activation='relu', padding='same')(encoded)
+#encoded = MaxPooling1D(1, padding='same')(encoded)
 
 # Decoder...
-x = Conv1DTranspose(256, 2, activation='relu', padding='same')(encoded)
-#x = UpSampling1D(1)(x) #No realiza ningún cambio
-x = Conv1DTranspose(128, 2, activation='relu', padding='same')(x)
-x = UpSampling1D(2)(x)
-x = Conv1DTranspose(64, 3, activation='relu', padding='same')(x)
-x = UpSampling1D(2)(x)
+decoded = Conv1DTranspose(256, 2, activation='relu', padding='same')(encoded)
+#decoded = UpSampling1D(1)(decoded)
+decoded = Conv1DTranspose(128, 2, activation='relu', padding='same')(decoded)
+decoded = UpSampling1D(2)(decoded)
+decoded = Conv1DTranspose(64, 3, activation='relu', padding='same')(decoded)
+decoded = UpSampling1D(2)(decoded)
 
 
 # Capa de salida con 1 convolución
-decoded = Conv1D(1, 3, activation='linear', padding='same')(x)
+decoded = Conv1D(1, 3, activation='linear', padding='same')(decoded)
 
 # Compilamos y entrenamos
-autoencoder = Model(inputs=input_sensors, outputs=decoded)
-encoder = Model(inputs=input_sensors, outputs=encoded)
-autoencoder.compile(optimizer='RMSProp', loss='mse', metrics=['mse'])
+autoencoder = ak.AutoModel(inputs=input_sensors, outputs=decoded, overwrite=True)#Model(inputs=input_sensors, outputs=decoded)
+#encoder = Model(inputs=input_sensors, outputs=encoded)
+#autoencoder.compile(optimizer='RMSProp', loss='mse', metrics=['mse'])
 
-history = autoencoder.fit(X_train, y_train, epochs=40, batch_size=1250, validation_data=(X_test, y_test))
+#history = autoencoder.fit(X_train, y_train, epochs=40, batch_size=1250, validation_data=(X_test, y_test))
+history = autoencoder.fit(X_train, y_train, validation_data=(X_test, y_test))
+
+autoencoder = autoencoder.export_model()
 
 # Guardamos el modelo
-encoder.save(model_file)
+#encoder.save(model_file)
 
 # ---- Evaluación del modelo ---- #
 autoencoder.summary()
-encoder.summary()
+#encoder.summary()
 score = autoencoder.evaluate(X_test, y_test, verbose=0)
 print('Resultado en el test set:')
 print('Test loss: {:0.4f}'.format(score[0]))
