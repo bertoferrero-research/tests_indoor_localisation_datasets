@@ -69,6 +69,7 @@ model = ak.AutoModel(
         output_layer,
     ],
     overwrite=True,
+    max_trials=10,
 )
 
 #Entrenamos
