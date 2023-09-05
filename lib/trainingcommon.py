@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 import tensorflow as tf
+import math
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -274,6 +275,74 @@ def descale_dataframe(data: pd.DataFrame):
     data_scaled['pos_x'] = descale_pos_x(data['pos_x'])
     data_scaled['pos_y'] = descale_pos_y(data['pos_y'])
     return data_scaled
+
+#endregion
+
+#region transformación de datos
+
+def posXYlist_to_grid(pos_list: np.array, cell_amount_x: int, cell_amount_y: int, max_position_x: float = 20.660138018121128, max_position_y: float = 17.64103475472807, use_caregorical_output: bool = True):
+    '''
+    Transforma una lista de posiciones x, y al identificador de celda correspondiente
+    Se enumeran las celdas como {x_i},{y_i}, siendo la primera celda la 0,0.
+    Si se usa el output categórico, se devuelve un array de celdas numeradas a partir del 0, incrementandose el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    La numeración partirá del origen de coordenadas y se incrementará siempre hacia la x primero y luego hacia la y
+    Args:
+        pos_list (np.array): lista de posiciones x, y sin escalar
+        cell_amount_x (int): Número de celdas en el eje x
+        cell_amount_y (int): Número de celdas en el eje y
+        max_position_x (float): Valor máximo de la posición x
+        max_position_y (float): Valor máximo de la posición y
+        use_caregorical_output (bool): Si se activa, devuelve un array de celdas numeradas a partir del 0, incrementandose el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    Returns:
+        np.array: identificadores de celda en el formato indicado
+    '''
+    result = [posXY_to_grid(pos_x, pos_y, cell_amount_x, cell_amount_y, max_position_x, max_position_y, use_caregorical_output=use_caregorical_output) for pos_x, pos_y in pos_list]
+
+    return np.array(result)
+
+def posXY_to_grid(pos_x: float, pos_y: float, cell_amount_x: int, cell_amount_y: int, max_position_x: float = 20.660138018121128, max_position_y: float = 17.64103475472807, use_caregorical_output: bool = True):
+    '''
+    Transforma una posición x, y al identificador de celda correspondiente
+    Se enumeran las celdas como {x_i},{y_i}, siendo la primera celda la 1,1.
+    Si se usa el output categórico, se devuelve un array de celdas numeradas a partir del 0, incrementandose el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    La numeración partirá del origen de coordenadas.
+    Args:
+        pos_x (float): posición x sin escalar
+        pos_y (float): posición y sin escalar
+        cell_amount_x (int): Número de celdas en el eje x
+        cell_amount_y (int): Número de celdas en el eje y
+        max_position_x (float): Valor máximo de la posición x
+        max_position_y (float): Valor máximo de la posición y
+        use_caregorical_output (bool): Si se activa, devuelve un array de celdas numeradas a partir del 0, incrementandose el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    Returns:
+        string: identificador de celda en el formato indicado
+    '''
+
+    #Creamos un listado para poder ahorrar código
+    data = [
+        [pos_x, cell_amount_x, max_position_x],
+        [pos_y, cell_amount_y, max_position_y]
+    ]
+    result = []
+
+    #Recorremos cada eje
+    for axeData in data:
+        #Obtenemos el tamaño de cada celda
+        cell_size = axeData[2] / axeData[1]
+        #Obtenemos el identificador de celda
+        cell = math.ceil(axeData[0] / cell_size)
+        if not use_caregorical_output:
+            cell = str(cell)
+        #Añadimos el identificador a la lista
+        result.append(cell)
+
+    if not use_caregorical_output:    
+        #Devolvemos el resultado
+        return ','.join(result)
+
+    #Multiplicamos y por la cantidad de celdas de X y sumamos x
+    return (result[0] + ((result[1] - 1) * cell_amount_x) -1)
+    
 
 #endregion
 
