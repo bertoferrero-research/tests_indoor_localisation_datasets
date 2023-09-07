@@ -23,14 +23,14 @@ from lib.trainingcommon import descale_dataframe
 #Variables globales
 data_file = script_dir+'/../../../preprocessed_inputs/fingerprint_history_window_median.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
-model_file = script_dir+'/files/model.tf'
+model_file = script_dir+'/files/model.h5'
 random_seed = 42
 cell_amount_x = 9
 cell_amount_y = 9
 
 #Hiperparámetros
 batch_size = 1500
-epochs = 100
+epochs = 20
 loss = 'categorical_crossentropy' #'mse'
 optimizer = 'adam'
 
@@ -57,7 +57,9 @@ input = tf.keras.layers.Input(shape=inputlength)
 
 #x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
 hiddenLayer = tf.keras.layers.Dense(128, activation='relu')(input)
-#hiddenLayer = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(hiddenLayer)
+hiddenLayer = tf.keras.layers.Dense(128, activation='relu')(hiddenLayer)
+hiddenLayer = tf.keras.layers.Dense(64, activation='relu')(hiddenLayer)
+hiddenLayer = tf.keras.layers.Dense(32, activation='relu')(hiddenLayer)
 
 output = tf.keras.layers.Dense(outputlength, activation='softmax')(hiddenLayer)
 model = tf.keras.models.Model(inputs=input, outputs=output)
