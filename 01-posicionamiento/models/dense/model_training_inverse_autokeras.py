@@ -68,8 +68,8 @@ model = ak.AutoModel(
     outputs=[
         output_layer,
     ],
-    overwrite=True,
-    max_trials=10,
+    overwrite=False,
+    max_trials=30,
 )
 
 #Entrenamos
@@ -78,10 +78,10 @@ history = model.fit([X_pos_train, X_rssi_train], y_train, validation_data=([X_po
                      verbose=1)
 
 #Exportamos el modelo
-model.export_model(model_file)
+model = model.export_model()
 
 # Evaluamos usando el test set
-score = model.evaluate(X_test, y_test, verbose=0)
+score = model.evaluate([X_pos_test, X_rssi_test], y_test, verbose=0)
 
 
 '''
@@ -107,11 +107,6 @@ model.save(model_file)
 #Sacamos valoraciones
 print("-- Resumen del modelo:")
 print(model.summary())
-
-print("-- Evaluación cruzada")
-print("Puntuaciones de validación cruzada:", cross_val_scores)
-print("Puntuación media:", cross_val_scores.mean())
-print("Desviación estándar:", cross_val_scores.std())
 
 print("-- Entrenamiento final")
 print('Resultado en el test set:')

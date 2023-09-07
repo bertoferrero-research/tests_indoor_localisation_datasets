@@ -31,7 +31,7 @@ cell_amount_y = 9
 #Hiperparámetros
 batch_size = 1500
 epochs = 100
-loss = 'mse' #'mse'
+loss = 'categorical_crossentropy' #'mse'
 optimizer = 'adam'
 
 #Cargamos la semilla de los generadores aleatorios

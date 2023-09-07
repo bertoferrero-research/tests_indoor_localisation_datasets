@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 import math
 import os.path
 import pickle
+import autokeras as ak
+import sys
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+root_dir = script_dir+'/../'
+sys.path.insert(1, root_dir)
 from lib.trainingcommon import load_real_track_data_inverse
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_pos_y
@@ -23,11 +28,11 @@ scale_y = True
 remove_not_full_rows = True
 
 #Variables globales
-track_file = './dataset_processed_csv/'+input_file_name+'.csv'
-output_file = './prediction_output/inverse_'+model+'_'+input_file_name+'.csv'
-model_dir = './models/'+model
-scaler_file = model_dir+'/files/scaler_inverse.pkl'
-model_file = model_dir+'/files/model_inverse.h5'
+track_file = root_dir+'/preprocessed_inputs/'+input_file_name+'.csv'
+output_file = script_dir+'/prediction_output/inverse_'+model+'_'+input_file_name+'_autokeras.csv'
+model_dir = script_dir+'/models/'+model
+scaler_file = model_dir+'/files/scaler_inverse_autokeras.pkl'
+model_file = model_dir+'/files/model_inverse_autokeras.tf' #model_inverse.h5
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
@@ -35,20 +40,20 @@ dim_y = 17.64103475472807
 
 #Preparamos los datos
 input_data, output_data, sensors_mapping = load_real_track_data_inverse(track_file, scaler_file, use_pos_z, scale_y, remove_not_full_rows, separate_mac_and_pos=True)
-print(input_data)
-print(output_data)
+#print(input_data)
+#print(output_data)
 
 #Cargamos el modelo
-model = tf.keras.models.load_model(model_file)
+model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
 
 #Predecimos
 predictions = model.predict(input_data)
 
-print("-Predicciones-")
-print("Real:")
-print(output_data)
-print("Estimado:")
-print(predictions)
+#print("-Predicciones-")
+#print("Real:")
+#print(output_data)
+#print("Estimado:")
+#print(predictions)
 
 #Desescalamos
 with open(scaler_file, 'rb') as scalerFile:
