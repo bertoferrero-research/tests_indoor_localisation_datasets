@@ -6,6 +6,7 @@ import math
 import os.path
 import pickle
 import random
+import shutil
 from sklearn.model_selection import train_test_split
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
@@ -14,10 +15,13 @@ from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import posXYlist_to_grid
 from lib.trainingcommon import descale_dataframe
+from lib.trainingcommon import save_model
+from lib.trainingcommon import load_data
 
 
 #Variables globales
 data_file = script_dir+'/../../../preprocessed_inputs/fingerprint_history_window_median.csv'
+#track_file = script_dir+'/../../../preprocessed_inputs/synthetic_tracks/track_1_rssi_12h.csv'
 scaler_file = script_dir+'/files/scaler.pkl'
 model_file = script_dir+'/files/model.h5'
 random_seed = 42
@@ -26,7 +30,7 @@ cell_amount_y = 9
 
 #Hiperparámetros
 batch_size = 1500
-epochs = 20
+epochs = 40
 loss = 'categorical_crossentropy' #'mse'
 optimizer = 'adam'
 
@@ -38,6 +42,9 @@ random.seed(random_seed)
 
 #Cargamos los ficheros
 X, y = load_training_data(data_file, scaler_file, include_pos_z=False, scale_y=False, remove_not_full_rows=True)
+#track_X, track_y = load_data(track_file, scaler_file, train_scaler_file=False, include_pos_z=False, scale_y=False, remove_not_full_rows=True)
+#X = pd.concat([X, track_X])
+#y = pd.concat([y, track_y])
 y = posXYlist_to_grid(y.to_numpy(), cell_amount_x, cell_amount_y)
 
 #Convertimos a categorical
@@ -52,10 +59,10 @@ outputlength = y.shape[1]
 input = tf.keras.layers.Input(shape=inputlength)
 
 #x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-hiddenLayer = tf.keras.layers.Dense(256, activation='relu')(input)
-hiddenLayer = tf.keras.layers.Dense(100, activation='relu')(hiddenLayer)
+hiddenLayer = tf.keras.layers.Dense(512, activation='relu')(input)
+#hiddenLayer = tf.keras.layers.Dense(256, activation='relu')(hiddenLayer)
 #hiddenLayer = tf.keras.layers.Dense(64, activation='relu')(hiddenLayer)
-#hiddenLayer = tf.keras.layers.Dense(32, activation='relu')(hiddenLayer)
+#hiddenLayer = tf.keras.layers.Dense(64, activation='relu')(hiddenLayer)
 
 output = tf.keras.layers.Dense(outputlength, activation='softmax')(hiddenLayer)
 model = tf.keras.models.Model(inputs=input, outputs=output)
@@ -74,9 +81,7 @@ score = model.evaluate(X_test, y_test, verbose=0)
 
 
 #Guardamos el modelo
-if os.path.exists(model_file):
-  os.remove(model_file)
-model.save(model_file)
+save_model(model, model_file)
 
 #Sacamos valoraciones
 print("-- Resumen del modelo:")

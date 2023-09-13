@@ -16,10 +16,13 @@ from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import posXYlist_to_grid
 from lib.trainingcommon import descale_dataframe
+from lib.trainingcommon import save_model
+from lib.trainingcommon import load_data
 
 
 #Variables globales
 data_file = script_dir+'/../../../preprocessed_inputs/fingerprint_history_window_median.csv'
+track_file = script_dir+'/../../../preprocessed_inputs/synthetic_tracks/track_1_rssi_12h.csv'
 scaler_file = script_dir+'/files/scaler_autokeras.pkl'
 model_file = script_dir+'/files/model_autokeras.tf'
 weight_file = script_dir+'/files/weights_autokeras'
@@ -30,7 +33,7 @@ cell_amount_y = 9
 #Autokeras config
 max_trials = 20
 autokeras_project_name = 'posicionamiento_clasificacion1'
-auokeras_folder = root_dir+'/autokeras_training/'
+auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
 #Cargamos la semilla de los generadores aleatorios
 np.random.seed(random_seed)
@@ -40,6 +43,10 @@ random.seed(random_seed)
 
 #Cargamos los ficheros
 X, y = load_training_data(data_file, scaler_file, include_pos_z=False, scale_y=False, remove_not_full_rows=True)
+track_X, track_y = load_data(track_file, scaler_file, train_scaler_file=False, include_pos_z=False, scale_y=False, remove_not_full_rows=True)
+X = pd.concat([X, track_X])
+y = pd.concat([y, track_y])
+
 y = posXYlist_to_grid(y.to_numpy(), cell_amount_x, cell_amount_y)
 
 #Convertimos a categorical
@@ -55,7 +62,7 @@ model = ak.AutoModel(
     inputs=input,
     outputs=output_layer,
     overwrite=True,
-    objective = 'accuracy',
+    objective = 'val_accuracy',
     max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder
 )
 
@@ -69,9 +76,7 @@ history = model.fit(X_train, y_train, validation_data=(X_test, y_test), verbose=
 
 #Guardamos el modelo
 model = model.export_model()
-if os.path.exists(model_file):
-  os.remove(model_file)
-model.save(model_file)
+save_model(model, model_file)
 
 #Sacamos valoraciones
 print("-- Resumen del modelo:")

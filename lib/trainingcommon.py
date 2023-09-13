@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import pickle
 import tensorflow as tf
 import math
+import os
+import sys
+import shutil
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -406,7 +409,6 @@ def grid_to_posXY(cell, cell_amount_x: int, cell_amount_y: int, max_position_x: 
 
 #endregion
 
-
 #region Analisis y dibujado
 
 def cross_val_score_multi_input(model:tf.keras.Model, X, y, cv, loss, optimizer, metrics, batch_size:int, epochs:int, verbose = 0):
@@ -477,6 +479,24 @@ def plot_learning_curves(hist):
   plt.xlabel('Epoch')  
   plt.legend(['Conjunto de entrenamiento', 'Conjunto de validación'], loc='upper right')
   plt.show()
+#endregion
+
+#region Herramientas generales
+
+def save_model(model, model_file: str):
+    '''
+    Guarda un modelo en un fichero
+    Args:
+        model (keras.model): modelo a guardar
+        model_file (str): ruta del fichero
+    '''
+    if os.path.exists(model_file):
+        try:
+            os.remove(model_file)
+        except:
+            shutil.rmtree(model_file)
+    model.save(model_file)
+
 #endregion
 
 #region Deprecateds

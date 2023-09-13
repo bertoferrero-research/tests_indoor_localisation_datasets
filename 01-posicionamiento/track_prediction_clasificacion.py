@@ -27,8 +27,8 @@ remove_not_full_rows = True
 track_file = root_dir+'/preprocessed_inputs/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
 output_file = script_dir+'/prediction_output/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
 model_dir = script_dir+'/models/'+model
-scaler_file = model_dir+'/files/scaler_autokeras.pkl'
-model_file = model_dir+'/files/model_autokeras.tf'
+scaler_file = model_dir+'/files/scaler.pkl'
+model_file = model_dir+'/files/model.h5'
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 cell_amount_x = 9
@@ -122,3 +122,9 @@ print("Desviación rejilla cuartil 75%: "+str(output_data['predicted_grid'].quan
 
 #Hacemos la salida
 output_data.to_csv(output_file, index=False)
+
+#Mostramos el grafico
+plt.plot([0, 0, dim_x, dim_x, 0], [0, dim_y,  dim_y, 0, 0], 'go-', label='Real', linewidth=1)
+plt.plot(output_data['real_x'].values, output_data['real_y'].values, 'ro-', label='Real', linewidth=1)
+plt.plot(output_data['predicted_x'].values, output_data['predicted_y'].values, 'mo-', label='Calculada', linewidth=1)
+plt.show()

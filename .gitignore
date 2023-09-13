@@ -3,3 +3,4 @@ dataset/*
 auto_model/*
 structured_data_regressor/*
 autokeras_training/*
+tmp/*
