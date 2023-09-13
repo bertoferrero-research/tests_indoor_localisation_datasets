@@ -6,10 +6,6 @@ import math
 import os.path
 import pickle
 import random
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
@@ -56,10 +52,10 @@ outputlength = y.shape[1]
 input = tf.keras.layers.Input(shape=inputlength)
 
 #x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-hiddenLayer = tf.keras.layers.Dense(128, activation='relu')(input)
-hiddenLayer = tf.keras.layers.Dense(128, activation='relu')(hiddenLayer)
-hiddenLayer = tf.keras.layers.Dense(64, activation='relu')(hiddenLayer)
-hiddenLayer = tf.keras.layers.Dense(32, activation='relu')(hiddenLayer)
+hiddenLayer = tf.keras.layers.Dense(256, activation='relu')(input)
+hiddenLayer = tf.keras.layers.Dense(100, activation='relu')(hiddenLayer)
+#hiddenLayer = tf.keras.layers.Dense(64, activation='relu')(hiddenLayer)
+#hiddenLayer = tf.keras.layers.Dense(32, activation='relu')(hiddenLayer)
 
 output = tf.keras.layers.Dense(outputlength, activation='softmax')(hiddenLayer)
 model = tf.keras.models.Model(inputs=input, outputs=output)

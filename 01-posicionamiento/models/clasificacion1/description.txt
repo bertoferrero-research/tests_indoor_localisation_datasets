@@ -1,0 +1,41 @@
+Diseño 1 → Tras analizar el dataset se decide emplear una rejilla de 9x9. De esta manera se busca coincidir cada region con los puntos de muestreo de la fase offline.
+
+Modelo autokeras:
+
+Accuracy: 0.996315479
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #
+=================================================================
+ input_1 (InputLayer)        [(None, 12)]              0
+
+ dense (Dense)               (None, 32)                416
+
+ batch_normalization (Batch  (None, 32)                128
+ Normalization)
+
+ re_lu (ReLU)                (None, 32)                0
+
+ dense_1 (Dense)             (None, 32)                1056
+
+ batch_normalization_1 (Bat  (None, 32)                128
+ chNormalization)
+
+ re_lu_1 (ReLU)              (None, 32)                0
+
+ dense_2 (Dense)             (None, 32)                1056
+
+ batch_normalization_2 (Bat  (None, 32)                128
+ chNormalization)
+
+ re_lu_2 (ReLU)              (None, 32)                0
+
+ dense_3 (Dense)             (None, 81)                2673
+
+ classification_head_1 (Sof  (None, 81)                0
+ tmax)
+
+=================================================================
+Total params: 5585 (21.82 KB)
+Trainable params: 5393 (21.07 KB)
+Non-trainable params: 192 (768.00 Byte)
+_________________________________________________________________
