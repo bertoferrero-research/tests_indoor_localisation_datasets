@@ -16,7 +16,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-sys.path.insert(1, script_dir+'/../../')
+sys.path.insert(1, script_dir+'/../../../')
 from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data_inverse
 from lib.trainingcommon import descale_pos_x
@@ -25,8 +25,7 @@ from lib.trainingcommon import cross_val_score_multi_input
 
 
 #Variables globales
-script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-data_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_window_median.csv'
+data_file = script_dir+'/../../../preprocessed_inputs/fingerprint_history_window_median.csv'
 scaler_file = script_dir+'/files/scaler_inverse.pkl'
 model_file = script_dir+'/files/model_inverse.h5'
 random_seed = 42
@@ -60,30 +59,40 @@ flatten_mac = Flatten()(embedded_mac)
 concatenated_inputs = concatenate([input_positions, flatten_mac])
 
 #Capas ocultas y de salida
-hidden_layer = Dense(128, activation='relu')(concatenated_inputs)
+hidden_layer = Dense(512, activation='relu')(concatenated_inputs)
+hidden_layer = Dense(512, activation='relu')(hidden_layer)
+hidden_layer = Dense(128, activation='relu')(hidden_layer)
 hidden_layer = Dense(128, activation='relu')(hidden_layer)
 hidden_layer = Dense(64, activation='relu')(hidden_layer)
 hidden_layer = Dense(64, activation='relu')(hidden_layer)
 hidden_layer = Dense(32, activation='relu')(hidden_layer)
 output_layer = Dense(1, activation='linear')(hidden_layer)
 
+#Mejor diseño hasta ahora
+# hidden_layer = Dense(128, activation='relu')(concatenated_inputs)
+# hidden_layer = Dense(128, activation='relu')(hidden_layer)
+# hidden_layer = Dense(64, activation='relu')(hidden_layer)
+# hidden_layer = Dense(64, activation='relu')(hidden_layer)
+# hidden_layer = Dense(32, activation='relu')(hidden_layer)
+# output_layer = Dense(1, activation='linear')(hidden_layer)
+
 #Creamos el modelo
 model = Model(inputs=[input_positions, input_mac], outputs=output_layer)
 model.compile(loss=loss, optimizer=optimizer, metrics=[loss] )
 
 #Realizamos evaluación cruzada
-kf = KFold(n_splits=cross_val_splits, shuffle=True)
-cross_val_scores = cross_val_score_multi_input(model, X, y, loss=loss, optimizer=optimizer, metrics=cross_val_scoring, cv=kf, batch_size=batch_size, epochs=epochs, verbose=1)
+#kf = KFold(n_splits=cross_val_splits, shuffle=True)
+#cross_val_scores = cross_val_score_multi_input(model, X, y, loss=loss, optimizer=optimizer, metrics=cross_val_scoring, cv=kf, batch_size=batch_size, epochs=epochs, verbose=1)
 
 #Entrenamos
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
+X_pos_train, X_pos_test, X_rssi_train, X_rssi_test, y_train, y_test = train_test_split(X[0].to_numpy() ,X[1].to_numpy(), y.to_numpy(), test_size=0.2)
+history = model.fit([X_pos_train, X_rssi_train], y_train, validation_data=([X_pos_test, X_rssi_test], y_test),
                      batch_size=  batch_size,
                      epochs=  epochs, 
                      verbose=1)
 
 # Evaluamos usando el test set
-score = model.evaluate(X_test, y_test, verbose=0)
+score = model.evaluate([X_pos_test, X_rssi_test], y_test, verbose=0)
 
 
 '''
@@ -110,10 +119,10 @@ model.save(model_file)
 print("-- Resumen del modelo:")
 print(model.summary())
 
-print("-- Evaluación cruzada")
-print("Puntuaciones de validación cruzada:", cross_val_scores)
-print("Puntuación media:", cross_val_scores.mean())
-print("Desviación estándar:", cross_val_scores.std())
+# print("-- Evaluación cruzada")
+# print("Puntuaciones de validación cruzada:", cross_val_scores)
+# print("Puntuación media:", cross_val_scores.mean())
+# print("Desviación estándar:", cross_val_scores.std())
 
 print("-- Entrenamiento final")
 print('Resultado en el test set:')

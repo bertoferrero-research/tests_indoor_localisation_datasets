@@ -29,10 +29,10 @@ remove_not_full_rows = True
 
 #Variables globales
 track_file = root_dir+'/preprocessed_inputs/'+input_file_name+'.csv'
-output_file = script_dir+'/prediction_output/inverse_'+model+'_'+input_file_name+'_autokeras.csv'
+output_file = script_dir+'/prediction_output/inverse_'+model+'_'+input_file_name+'.csv'
 model_dir = script_dir+'/models/'+model
-scaler_file = model_dir+'/files/scaler_inverse_autokeras.pkl'
-model_file = model_dir+'/files/model_inverse_autokeras.tf' #model_inverse.h5
+scaler_file = model_dir+'/files/scaler_inverse.pkl'
+model_file = model_dir+'/files/model_inverse.h5' #model_inverse.h5
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
