@@ -342,6 +342,66 @@ def posXY_to_grid(pos_x: float, pos_y: float, cell_amount_x: int, cell_amount_y:
 
     #Multiplicamos y por la cantidad de celdas de X y sumamos x
     return (result[0] + ((result[1] - 1) * cell_amount_x) -1)
+
+def gridList_to_posXY(grid_list: np.array, cell_amount_x: int, cell_amount_y: int, max_position_x: float = 20.660138018121128, max_position_y: float = 17.64103475472807, use_caregorical_input: bool = True):
+    '''
+    Transforma una lista de identificadores de celda al centro de la celda correspondiente
+    Se enumeran las celdas como {x_i},{y_i}, siendo la primera celda la 1,1.
+    Si se usa el input categórico, la entrada será un indice numérico partiendo del 0, incrementandose en el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    La numeración partirá del origen de coordenadas.
+    Args:
+        grid_list (np.array): lista de identificadores de celda en el formato indicado
+        cell_amount_x (int): Número de celdas en el eje x
+        cell_amount_y (int): Número de celdas en el eje y
+        max_position_x (float): Valor máximo de la posición x
+        max_position_y (float): Valor máximo de la posición y
+        use_caregorical_input (bool): Si se activa, la entrada será un indice numérico partiendo del 0, incrementandose en el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    Returns:
+        np.array: posiciones x, y sin escalar
+    '''
+    result = [grid_to_posXY(grid, cell_amount_x, cell_amount_y, max_position_x, max_position_y, use_caregorical_input=use_caregorical_input) for grid in grid_list]
+
+    return np.array(result)
+
+def grid_to_posXY(cell, cell_amount_x: int, cell_amount_y: int, max_position_x: float = 20.660138018121128, max_position_y: float = 17.64103475472807, use_caregorical_input: bool = True):
+    '''
+    Transforma un identificador de celda al centro de la celda correspondiente
+    Se enumeran las celdas como {x_i},{y_i}, siendo la primera celda la 1,1.
+    Si se usa el input categórico, la entrada será un indice numérico partiendo del 0, incrementandose en el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    La numeración partirá del origen de coordenadas.
+    Args:
+        cell (string): identificador de celda en el formato indicado
+        cell_amount_x (int): Número de celdas en el eje x
+        cell_amount_y (int): Número de celdas en el eje y
+        max_position_x (float): Valor máximo de la posición x
+        max_position_y (float): Valor máximo de la posición y
+        use_caregorical_input (bool): Si se activa, la entrada será un indice numérico partiendo del 0, incrementandose en el eje x primero. Ej 0 => 1,1, 1 => 2,1, 2 => 3,1, 3 => 1,2, 4 => 2,2, 5 => 3,2, 6 => 1,3, etc
+    Returns:
+        float: posición x
+        float: posición y
+    '''
+
+    #Primero, si es categórico, lo convertimos al formato {x_i},{y_i}, siendo la primera celda la 1,1.
+    if use_caregorical_input:
+        cell = int(cell)
+        cell += 1
+        cell_y = math.ceil(cell / cell_amount_x)
+        cell_x = cell - ((cell_y - 1) * cell_amount_x)
+        cell = str(cell_x)+','+str(cell_y)
+
+    #Dividimos cell en cell_x y cell_y
+    cell_x, cell_y = cell.split(',')
+
+    #Calculamos el tamaño de cada celda
+    cell_size_x = max_position_x / cell_amount_x
+    cell_size_y = max_position_y / cell_amount_y
+
+    #Calculamos la posición x e y en el centro de su celda
+    pos_x = (int(cell_x) * cell_size_x) - (cell_size_x / 2)
+    pos_y = (int(cell_y) * cell_size_y) - (cell_size_y / 2)
+
+    #Devolvemos
+    return pos_x, pos_y
     
 
 #endregion
