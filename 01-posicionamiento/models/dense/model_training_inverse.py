@@ -59,9 +59,7 @@ flatten_mac = Flatten()(embedded_mac)
 concatenated_inputs = concatenate([input_positions, flatten_mac])
 
 #Capas ocultas y de salida
-hidden_layer = Dense(512, activation='relu')(concatenated_inputs)
-hidden_layer = Dense(512, activation='relu')(hidden_layer)
-hidden_layer = Dense(128, activation='relu')(hidden_layer)
+hidden_layer = Dense(128, activation='relu')(concatenated_inputs)
 hidden_layer = Dense(128, activation='relu')(hidden_layer)
 hidden_layer = Dense(64, activation='relu')(hidden_layer)
 hidden_layer = Dense(64, activation='relu')(hidden_layer)

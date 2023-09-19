@@ -17,7 +17,8 @@ from sklearn.model_selection import train_test_split
 import autokeras as ak
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-sys.path.insert(1, script_dir+'/../../../')
+root_dir = script_dir+'/../../../'
+sys.path.insert(1, root_dir)
 from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data_inverse
 from lib.trainingcommon import descale_pos_x
@@ -26,15 +27,15 @@ from lib.trainingcommon import cross_val_score_multi_input
 
 
 #Variables globales
-script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-data_file = script_dir+'/../../../preprocessed_inputs/fingerprint_history_window_median.csv'
+data_file = root_dir+'preprocessed_inputs/fingerprint_history_window_median.csv'
 scaler_file = script_dir+'/files/scaler_inverse_autokeras.pkl'
 model_file = script_dir+'/files/model_inverse_autokeras.tf'
 random_seed = 42
 
-#Hiperparámetros
-embedding_size = 12
-loss = 'mse' #'mse'
+#Autokeras config
+max_trials = 20
+autokeras_project_name = 'model_inverse'
+auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
 #Cargamos la semilla de los generadores aleatorios
 np.random.seed(random_seed)
@@ -65,11 +66,9 @@ output_layer = ak.RegressionHead()(hidden_layers)
 #Creamos el modelo
 model = ak.AutoModel(
     inputs=[input_positions, input_mac],
-    outputs=[
-        output_layer,
-    ],
+    outputs=output_layer,
     overwrite=False,
-    max_trials=30,
+    max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder
 )
 
 #Entrenamos
