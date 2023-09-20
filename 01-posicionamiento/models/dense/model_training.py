@@ -13,7 +13,8 @@ from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-sys.path.insert(1, script_dir+'/../../')
+root_dir = script_dir+'/../../../'                                                                        #Referencia al directorio raiz del proyecto
+sys.path.insert(1, root_dir)
 from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_pos_x
@@ -22,15 +23,15 @@ from lib.trainingcommon import descale_dataframe
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-data_file = script_dir+'/../../dataset_processed_csv/fingerprint_history_window_median.csv'
-scaler_file = script_dir+'/files/scaler.pkl'
-model_file = script_dir+'/files/model.h5'
+data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_1_4_100_median.csv'
+scaler_file = script_dir+'/files/paper1/scaler_1_4_100_median.pkl'
+model_file = script_dir+'/files/paper1/model_1_4_100_median.h5'
 random_seed = 42
 
 #Hiperparámetros
 batch_size = 1500
 epochs = 100
-loss = 'mae' #'mse'
+loss = 'mse' #'mse'
 optimizer = 'adam'
 cross_val_splits = 10     #Cantidad de divisiones a realizar en el grupo de entrenamiento para la validación cruzada
 cross_val_scoring = 'neg_mean_absolute_error' #'neg_mean_squared_error' #Valor para el scoring de la validación cruzada
@@ -42,7 +43,7 @@ random.seed(42)
 # ---- Construcción del modelo ---- #
 
 #Cargamos los ficheros
-X, y = load_training_data(data_file, scaler_file, include_pos_z=False, scale_y=True, remove_not_full_rows=True)
+X, y = load_training_data(data_file, scaler_file, include_pos_z=False, scale_y=True, remove_not_full_rows=False)
 
 
 #Construimos el modelo
@@ -65,14 +66,14 @@ output = tf.keras.layers.Dense(outputlength, activation='linear')(hiddenLayer)
 #output = tf.keras.layers.Dropout(0.2)(x)
 model = tf.keras.models.Model(inputs=input, outputs=output)
 
-model.compile(loss=loss, optimizer=optimizer, metrics=[loss] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
+model.compile(loss=loss, optimizer=optimizer, metrics=[loss, 'accuracy'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
 #comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
 #Seguir luchando por bajar el accuracy en regresion no es buena idea https://stats.stackexchange.com/questions/352036/why-is-accuracy-not-a-good-measure-for-regression-models
 
 # --- Evaluación mediante validación cruzada --- #
-kf = KFold(n_splits=cross_val_splits, shuffle=True)
-estimator = KerasRegressor(build_fn=model, optimizer=optimizer, loss=loss, metrics=[loss], epochs=epochs, batch_size=batch_size, verbose=0)
-cross_val_scores = cross_val_score(estimator, X, y, cv=kf, scoring=cross_val_scoring)
+#kf = KFold(n_splits=cross_val_splits, shuffle=True)
+#estimator = KerasRegressor(build_fn=model, optimizer=optimizer, loss=loss, metrics=[loss], epochs=epochs, batch_size=batch_size, verbose=0)
+#cross_val_scores = cross_val_score(estimator, X, y, cv=kf, scoring=cross_val_scoring)
 
 
 #Entrenamos
@@ -109,10 +110,10 @@ model.save(model_file)
 print("-- Resumen del modelo:")
 print(model.summary())
 
-print("-- Evaluación cruzada")
-print("Puntuaciones de validación cruzada:", cross_val_scores)
-print("Puntuación media:", cross_val_scores.mean())
-print("Desviación estándar:", cross_val_scores.std())
+# print("-- Evaluación cruzada")
+# print("Puntuaciones de validación cruzada:", cross_val_scores)
+# print("Puntuación media:", cross_val_scores.mean())
+# print("Desviación estándar:", cross_val_scores.std())
 
 print("-- Entrenamiento final")
 print('Test loss: {:0.4f}'.format(score[0]))

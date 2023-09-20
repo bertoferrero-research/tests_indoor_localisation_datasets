@@ -18,7 +18,7 @@ from lib.filters.montecarlofilter import monte_carlo_filter
 from lib.filters.particlefilter import particle_filter
 
 #Configuración
-input_file_name = 'track_straight_01_all_sensors.mbd_window_median'#'track_1_rssi'#'track_straight_01_all_sensors.mbd_window_median'
+input_file_name = 'track_straight_01_all_sensors.mbd_window_1_4_100_median'#'track_1_rssi'#'track_straight_01_all_sensors.mbd_window_median'
 synthtetic_track = False#True#False
 model = 'dense'
 use_pos_z = False
@@ -26,11 +26,12 @@ scale_y = True
 remove_not_full_rows = True
 
 #Variables globales
-track_file = root_dir+'/preprocessed_inputs/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
-output_file = script_dir+'/prediction_output/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
+track_file = root_dir+'/preprocessed_inputs/paper1/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
+output_file = script_dir+'/prediction_output/paper1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
+deviation_file = script_dir+'/prediction_output/paper1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'_deviations.csv'
 model_dir = script_dir+'/models/'+model
-scaler_file = model_dir+'/files/scaler.pkl'
-model_file = model_dir+'/files/autokeras_model.tf'
+scaler_file = model_dir+'/files/paper1/scaler_1_4_100_median.pkl'
+model_file = model_dir+'/files/paper1/model_1_4_100_median.h5'
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
@@ -50,11 +51,11 @@ model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
 #Predecimos
 predictions = model.predict(input_data)
 
-print("-Predicciones-")
-print("Real:")
-print(output_data)
-print("Estimado:")
-print(predictions)
+# print("-Predicciones-")
+# print("Real:")
+# print(output_data)
+# print("Estimado:")
+# print(predictions)
 
 #Desescalamos
 #with open(scaler_output_file, 'rb') as scalerFile:
@@ -97,15 +98,50 @@ print("- Desviaciones en predicciones -")
 print("Desviación máxima X: "+str(output_data['deviation_x'].max()))
 print("Desviación mínima X: "+str(output_data['deviation_x'].min()))
 print("Desviación media X: "+str(output_data['deviation_x'].mean()))
+print("Desviación X cuartil 25%: "+str(output_data['deviation_x'].quantile(0.25)))
+print("Desviación X cuartil 50%: "+str(output_data['deviation_x'].quantile(0.50)))
+print("Desviación X cuartil 75%: "+str(output_data['deviation_x'].quantile(0.75)))
+
 print("Desviación máxima Y: "+str(output_data['deviation_y'].max()))
 print("Desviación mínima Y: "+str(output_data['deviation_y'].min()))
 print("Desviación media Y: "+str(output_data['deviation_y'].mean()))
+print("Desviación Y cuartil 25%: "+str(output_data['deviation_y'].quantile(0.25)))
+print("Desviación Y cuartil 50%: "+str(output_data['deviation_y'].quantile(0.50)))
+print("Desviación Y cuartil 75%: "+str(output_data['deviation_y'].quantile(0.75)))
+
 print("Distancia euclídea máxima: "+str(output_data['eclidean_distance'].max()))
 print("Distancia euclídea mínima: "+str(output_data['eclidean_distance'].min()))
 print("Distancia euclídea media: "+str(output_data['eclidean_distance'].mean()))
+print("Desviación euclídea cuartil 25%: "+str(output_data['eclidean_distance'].quantile(0.25)))
+print("Desviación euclídea cuartil 50%: "+str(output_data['eclidean_distance'].quantile(0.50)))
+print("Desviación euclídea cuartil 75%: "+str(output_data['eclidean_distance'].quantile(0.75)))
+
+#Guardamos las desviaciones en csv
+deviation_values = pd.DataFrame([{
+  'min_x': output_data['deviation_x'].min(),
+  'max_x': output_data['deviation_x'].max(),
+  'mean_x': output_data['deviation_x'].mean(),
+  'q25_x': output_data['deviation_x'].quantile(0.25),
+  'q50_x': output_data['deviation_x'].quantile(0.50),
+  'q75_x': output_data['deviation_x'].quantile(0.75),
+  'min_y': output_data['deviation_y'].min(),
+  'max_y': output_data['deviation_y'].max(),
+  'mean_y': output_data['deviation_y'].mean(),
+  'q25_y': output_data['deviation_y'].quantile(0.25),
+  'q50_y': output_data['deviation_y'].quantile(0.50),
+  'q75_y': output_data['deviation_y'].quantile(0.75),
+  'min_euclidean': output_data['eclidean_distance'].min(),
+  'max_euclidean': output_data['eclidean_distance'].max(),
+  'mean_euclidean': output_data['eclidean_distance'].mean(),
+  'q25_euclidean': output_data['eclidean_distance'].quantile(0.25),
+  'q50_euclidean': output_data['eclidean_distance'].quantile(0.50),
+  'q75_euclidean': output_data['eclidean_distance'].quantile(0.75),
+}])
+
+deviation_values.to_csv(deviation_file, index=False)
 
 
-#Hacemos la salida
+#Hacemos la salida de todos los datos en bruto
 output_data.to_csv(output_file, index=False)
 
 
