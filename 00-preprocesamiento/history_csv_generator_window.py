@@ -5,24 +5,25 @@ import re
 import os.path
 import math
 
-#Valores en bruto agrupados por espacio temporal
-
-##Variables globales
-script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+#Configuración de la ventana
+min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
+max_window_size = 1.5                                                                                 #Tamaño máximo de la ventana de agrupación
+min_entries_per_sensor = 3                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
+min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
+invalid_sensor_value = 100                                                                            #Valor que se asigna a los sensores invalidos
 sensor_filtering_tipe = 'tss'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
-fingerprint_history_folder = script_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
-fingerprint_history_file = script_dir+'/dataset_processed_csv/fingerprint_history_window_'+sensor_filtering_tipe+'.csv'                                             #Salida del csv de tests
+
+#Variables globales
+script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
+root_dir = script_dir+'/../'                                                                        #Referencia al directorio raiz del proyecto
+fingerprint_history_folder = root_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
+fingerprint_history_file = root_dir+'/preprocessed_inputs/paper1/fingerprint_history_window_'+(str(min_entries_per_sensor))+'_'+(str(min_valid_sensors))+'_'+(str(invalid_sensor_value))+'_'+sensor_filtering_tipe+'.csv'                                             #Salida del csv de tests
 sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
 sensors_mac = []                                                                                    #Extraido de los ficheros
 regex_file_position = r"(\d+\.\d+_\d+\.\d+_\d+\.\d+)"                                               #regex para extraer la posición del sensor del nombre del fichero
 sensors_header = ['timestamp', 'mac_sensor', 'mac_beacon', 'rssi']                                  #cabeceras de los archivos de los sensores
 sensors_dtype = {'timestamp': np.float64, 'mac_sensor': str, 'mac_beacon': str, 'rssi': np.int32}   #tipo de datos en los archivos de los sensores
-#Configuración de agrupador
-min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
-max_window_size = 1.5                                                                                 #Tamaño máximo de la ventana de agrupación
-min_entries_per_sensor = 3                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
-min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
-invalid_sensor_value = -150                                                                           #Valor que se asigna a los sensores invalidos
+
 
 
 #Vamos a agrupar las mediciones de todos los sensores por zona de medición, extraemos para ello todos los ficheros del primer sensor, a partir de él leemos el resto
