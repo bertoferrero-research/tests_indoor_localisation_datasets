@@ -1,5 +1,15 @@
 Diseño 1 → Tras analizar el dataset se decide emplear una rejilla de 9x9. De esta manera se busca coincidir cada region con los puntos de muestreo de la fase offline.
 
+Diseño 2 -> Descartado
+
+Diseño 3 -> Rejilla de 7x6
+    Mejor rendimiento hasta el momento
+    0.9970 / 0.0142
+    hiddenLayer = tf.keras.layers.Dense(256, activation='relu')(input)
+    hiddenLayer = tf.keras.layers.Dense(128, activation='relu')(hiddenLayer)
+    hiddenLayer = tf.keras.layers.Dense(64, activation='relu')(hiddenLayer)
+
+
 Modelo autokeras:
 
 Accuracy: 0.996315479
