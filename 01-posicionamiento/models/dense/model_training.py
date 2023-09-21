@@ -19,13 +19,15 @@ from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_dataframe
+from lib.trainingcommon import load_data
 
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_1_4_100_median.csv'
-scaler_file = script_dir+'/files/paper1/scaler_1_4_100_median.pkl'
-model_file = script_dir+'/files/paper1/model_1_4_100_median.h5'
+data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_3_4_100_median.csv'
+track_file = None#root_dir+'preprocessed_inputs/paper1/track_straight_05_all_sensors.mbd_window_3_4_100_median.csv'
+scaler_file = script_dir+'/files/paper1/scaler_3_4_100_median.pkl'
+model_file = script_dir+'/files/paper1/model_3_4_100_median.h5'
 random_seed = 42
 
 #Hiperparámetros
@@ -44,6 +46,10 @@ random.seed(42)
 
 #Cargamos los ficheros
 X, y = load_training_data(data_file, scaler_file, include_pos_z=False, scale_y=True, remove_not_full_rows=False)
+if track_file is not None:
+  track_X, track_y = load_data(track_file, scaler_file, train_scaler_file=False, include_pos_z=False, scale_y=True, remove_not_full_rows=True)
+  X = pd.concat([X, track_X])
+  y = pd.concat([y, track_y])
 
 
 #Construimos el modelo

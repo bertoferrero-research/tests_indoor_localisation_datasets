@@ -9,15 +9,15 @@ import math
 min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
 max_window_size = 1.5                                                                                 #Tamaño máximo de la ventana de agrupación
 min_entries_per_sensor = 3                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
-min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
+min_valid_sensors = 4                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
 invalid_sensor_value = 100                                                                           #Valor que se asigna a los sensores invalidos
-sensor_filtering_tipe = 'tss'                                                                                            #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min', 'tss'
+sensor_filtering_tipe = 'median'                                                                                            #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min', 'tss'
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__))                                                                  #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 root_dir = script_dir+'/../'                                                                        #Referencia al directorio raiz del proyecto
 fingerprint_track_folder = root_dir+'/dataset/trk/'                                                                    #Ruta donde se encuentran los históricos originales
-fingerprint_track_file = 'straight_01_all_sensors.mbd'                                                                   #Fichero a extraer
+fingerprint_track_file = 'straight_05_all_sensors.mbd'                                                                   #Fichero a extraer
 fingerprint_track_output = root_dir+'/preprocessed_inputs/paper1/track_'+fingerprint_track_file+'_window_'+(str(min_entries_per_sensor))+'_'+(str(min_valid_sensors))+'_'+(str(invalid_sensor_value))+'_'+sensor_filtering_tipe+'.csv'                   #Salida del csv de entrenamiento
 time_grouping_timestamp_difference = 0.02                                                                                #Al comprobar la diferencia de tiempos, en cuanto haya una diferencia de mas de este valor se cerrará el grupo anterior
 sensors_mac = []                                                                                                         #Extraido de los ficheros
