@@ -1,0 +1,1 @@
+Diseño 1 → Doble resolución empleando simpre una rejilla de 3x3, consiguiendo con ello emular a la rejilla estática de 9x9
