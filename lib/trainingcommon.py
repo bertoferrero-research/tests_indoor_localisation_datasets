@@ -12,12 +12,18 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 #region Carga de datos
-def load_data(data_file: str, scaler_file: str=None, train_scaler_file: bool=False, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False):
+def load_data(data_file: str, scaler_file: str=None, train_scaler_file: bool=False, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, not_valid_sensor_value: int = None, return_valid_sensors_map: bool = False):
     #Cargamos los ficheros
     data = pd.read_csv(data_file)
 
     #Preparamos los datos
     X, y = prepare_data(data, include_pos_z, scale_y, remove_not_full_rows)
+
+    #Preparamos el mapa de sensores no válidos
+    Xmap = None
+    if not_valid_sensor_value is not None and return_valid_sensors_map:
+        Xmap = X.ne(not_valid_sensor_value)
+        #Tambien se podría haber hecho directamente Xmap = X != 100
 
     #Escalamos
     if scaler_file is not None:
@@ -27,6 +33,8 @@ def load_data(data_file: str, scaler_file: str=None, train_scaler_file: bool=Fal
             X = scale_RSSI_track(scaler_file, X)
 
     #Devolvemos
+    if Xmap is not None:
+        return X, y, Xmap
     return X, y
 
 def load_data_inverse(data_file: str, scaler_file: str, train_scaler_file: bool=False, include_pos_z: bool=True, scale_y: bool=False, remove_not_full_rows: bool=False, separate_mac_and_pos: bool=False):
