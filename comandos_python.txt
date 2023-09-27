@@ -1,0 +1,1 @@
+py -m pip -> ejecuta pip dentro del entorno virtual
