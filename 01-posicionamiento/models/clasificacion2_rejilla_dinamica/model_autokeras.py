@@ -33,7 +33,7 @@ cell_amount_y = 3
 zoom_level = 2
 
 #Autokeras config
-max_trials = 20
+max_trials = 50
 autokeras_project_name = 'posicionamiento_clasificacion2'
 auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
@@ -77,7 +77,7 @@ output_d2 = ak.ClassificationHead(num_classes=outputlength_dim1, multi_label=Fal
 
 callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=2, restore_best_weights=True)
 model = ak.AutoModel(inputs=input_rssi, outputs=[output_d1, output_d2],
-    overwrite=True,
+    overwrite=False,
     #objective = 'val_output_d1_accuracy',
     max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
 
