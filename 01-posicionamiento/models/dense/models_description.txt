@@ -1,1 +1,3 @@
+model_1 -> Basado en lo descrito en el paper, capa oculta de 10 neuronas
+model_2 -> Diseño propio de capas ocultas
 model_3 -> Emplea dos entradas distitnas. 12 valores rssi y 12 entradas booleanas indicando con 0 y 1 qué sensores son válidos.
