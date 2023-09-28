@@ -8,10 +8,10 @@ import math
 #Configuración de la ventana
 min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
 max_window_size = 1.5                                                                                 #Tamaño máximo de la ventana de agrupación
-min_entries_per_sensor = 3                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
+min_entries_per_sensor = 1                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
 min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
 invalid_sensor_value = 100                                                                            #Valor que se asigna a los sensores invalidos
-sensor_filtering_tipe = 'tss'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
+sensor_filtering_tipe = 'median'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
