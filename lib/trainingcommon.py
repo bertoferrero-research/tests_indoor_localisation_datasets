@@ -31,6 +31,8 @@ def load_data(data_file: str, scaler_file: str=None, train_scaler_file: bool=Fal
             X = scale_RSSI_training(scaler_file, X)
         else:
             X = scale_RSSI_track(scaler_file, X)
+        X = X.astype(np.float32)
+    y = y.astype(np.float32)
 
     #Devolvemos
     if Xmap is not None:
@@ -154,6 +156,7 @@ def imputing_predict_na_data(data: pd.DataFrame):
 def scale_RSSI_training(scaler_file: str, X_data):
     scaler = StandardScaler()
     scaler.fit(X_data)
+    os.makedirs(os.path.dirname(scaler_file), exist_ok=True)
     with open(scaler_file, 'wb') as scalerFile:
         pickle.dump(scaler, scalerFile)
         scalerFile.close()
@@ -165,6 +168,7 @@ def scale_RSSI_training(scaler_file: str, X_data):
     return X_data
 
 def scale_RSSI_track(scaler_file: str, X):
+    os.makedirs(os.path.dirname(scaler_file), exist_ok=True)
     with open(scaler_file, 'rb') as scalerFile:
         scaler = pickle.load(scalerFile)
         scalerFile.close()
