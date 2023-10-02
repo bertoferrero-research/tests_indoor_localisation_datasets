@@ -3,3 +3,5 @@ Modelo LSTM con secuencias de n elementos con 12 caracteristicas por elemento (l
 -- Modelo 2 --
 Modelo LSTM con secuencias de n elementos de 12 caracteristicas codificadas (empleando autoencoder)
 -> Abandonado. No tiene sentido el autoencoder, la entrada de datos ya tiene una dimensionalidad bastante baja (12)
+-- Modelo 4 --
+Usar 60 muestras, emplear la posición estática inicial para rellenar al comienzo

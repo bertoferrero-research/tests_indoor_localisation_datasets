@@ -12,13 +12,14 @@ root_dir = script_dir+'/../'
 sys.path.insert(1, root_dir)
 from lib.trainingcommon import load_data
 from lib.trainingcommon import descale_pos_x
-from lib.trainingcommon import descale_pos_y
+from lib.trainingcommon import descale_pos_y, groupDataForRnn
 
 #Configuración
-N = 3 #Elementos en la secuencia
+N = 60 #Elementos en la secuencia
+group_fill_empty_heads = True
 input_file_name = 'track_straight_01_all_sensors.mbd_window_median'#'track_1_rssi'
 synthtetic_track = False
-model = 'model1'
+model = 'model4'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True
@@ -41,15 +42,7 @@ random.seed(random_seed)
 
 #Preparamos los datos
 input_data, output_data = load_data(track_file, scaler_file, False, use_pos_z, scale_y, remove_not_full_rows)
-
-#Realizamos las agrupaciones
-groupedX = []
-groupedy = []
-for i in range(N, len(input_data)):
-    groupedX.append(input_data.iloc[i-N:i])
-    groupedy.append(output_data.iloc[i])
-input_data = np.array(groupedX)
-output_data = np.array(groupedy)
+input_data, output_data = groupDataForRnn(input_data.to_numpy(), output_data.to_numpy(), N, fill_empty_heads=group_fill_empty_heads)
 
 #Cargamos el modelo
 model = tf.keras.models.load_model(model_file)
@@ -72,9 +65,11 @@ print(predictions)
 #Componemos la salida
 output_list = []
 for index in range(0, len(predictions)):
-  predicted_index = index - N
-  if predicted_index < 0:
-    continue
+  predicted_index = index
+  if not group_fill_empty_heads:
+    predicted_index = index - N
+    if predicted_index < 0:
+      continue
   listrow = {
     'predicted_x': predictions[predicted_index][0],
     'predicted_y': predictions[predicted_index][1],
