@@ -25,10 +25,10 @@ from lib.trainingcommon import load_data, save_model
 
 #Variables globales
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_1_4_100_median.csv'
+data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_3_12_100_tss.csv'
 track_file = None#root_dir+'preprocessed_inputs/paper1/track_straight_05_all_sensors.mbd_window_3_4_100_median.csv'
-scaler_file = script_dir+'/files/paper1/model1/scaler_1_4_100_median.pkl'
-model_file = script_dir+'/files/paper1/model1/model_1_4_100_median.tf'
+scaler_file = script_dir+'/files/paper1/model1/scaler_3_12_100_tss.pkl'
+model_file = script_dir+'/files/paper1/model1/model_3_12_100_tss.tf'
 model_image_file = script_dir+'/files/paper1/model1/model_plot.png'
 random_seed = 42
 
@@ -79,7 +79,7 @@ model = ak.AutoModel(
 
 #Entrenamos
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
+callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=2, restore_best_weights=True)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
                      verbose=2, callbacks=[callback])
 
