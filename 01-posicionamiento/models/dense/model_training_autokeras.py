@@ -71,7 +71,7 @@ output = ak.RegressionHead(output_dim=outputlength, metrics=['mse', 'accuracy'])
 model = ak.AutoModel(
   inputs=input,
   outputs=output,
-  overwrite=False,
+  overwrite=True,
   #objective = 'val_output_d1_accuracy',
   seed=random_seed,
   max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder
@@ -79,9 +79,9 @@ model = ak.AutoModel(
 
 #Entrenamos
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=2, restore_best_weights=True)
+callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                     verbose=1, callbacks=[callback])
+                     verbose=2, callbacks=[callback])
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
@@ -116,10 +116,12 @@ print(model.summary())
 
 print("-- Entrenamiento final")
 print('Test loss: {:0.4f}'.format(score[0]))
+print('Val loss: {:0.4f}'.format(score[1]))
+print('Val accuracy: {:0.4f}'.format(score[2]))
 
 
 #Guardamos la imagen resumen
 tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
 
 #plot_learning_curves(history)
-print(score)
+#print(score)

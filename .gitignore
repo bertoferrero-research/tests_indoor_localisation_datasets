@@ -4,3 +4,4 @@ auto_model/*
 structured_data_regressor/*
 autokeras_training/*
 tmp/*
+autokeras_training.txt
