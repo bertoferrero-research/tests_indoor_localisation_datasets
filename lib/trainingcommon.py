@@ -622,7 +622,7 @@ def cell_to_gridposition(cell: int, cell_amount_x: int):
     return cell
 
 
-def groupDataForRnn(X: np.array, y: np.array, N: int, fill_empty_heads: bool = False, fill_to_predict: bool = False):
+def groupDataForRnn(X: np.array, y: np.array, N: int, fill_empty_heads: bool = False, predict_next_output: bool = False):
     '''
     Agrupa los datos para un modelo RNN
     Args:
@@ -630,7 +630,7 @@ def groupDataForRnn(X: np.array, y: np.array, N: int, fill_empty_heads: bool = F
         y (np.array): Datos de salida
         N (int): Tamaño de la secuencia
         fill_empty_heads (bool): Si se activa, se rellenan las primeras filas con la primera fila del dataset, evitando que se pierdan los primeros N valores
-        fill_to_predict (bool): Si se activa, se rellena la última fila de salida con la siguiente fila del dataset
+        predict_next_output (bool): Si se activa, se rellena la fila de salida con la siguiente fila del dataset
     Returns:
         np.array: Datos de entrada agrupados
         np.array: Datos de salida agrupados
@@ -640,7 +640,7 @@ def groupDataForRnn(X: np.array, y: np.array, N: int, fill_empty_heads: bool = F
 
     # Si se desea predecir, el ajuste hará que se i llegue hasta len(X)-1 y que Y acumule el valor de la siguiente fila (i+1)
     fix_to_predict = 0
-    if (fill_to_predict):
+    if (predict_next_output):
         fix_to_predict = 1
 
     if (fill_empty_heads):

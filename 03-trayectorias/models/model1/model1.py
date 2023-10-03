@@ -14,7 +14,7 @@ root_dir = script_dir+'/../../../'
 sys.path.insert(1, root_dir)
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import cross_val_score_multi_input
-from lib.trainingcommon import plot_learning_curves
+from lib.trainingcommon import plot_learning_curves, groupDataForRnn
 
 #Variables globales
 N = 3 #Elementos en la secuencia
@@ -40,14 +40,7 @@ random.seed(random_seed)
 
 #Cargamos los ficheros
 X, y = load_training_data(track_file, scaler_file, include_pos_z=False, scale_y=True, remove_not_full_rows=True)
-#Realizamos las agrupaciones
-groupedX = []
-groupedy = []
-for i in range(N, len(X)):
-    groupedX.append(X.iloc[i-N:i])
-    groupedy.append(y.iloc[i])
-X = np.array(groupedX)
-y = np.array(groupedy)
+X, y = groupDataForRnn(X.to_numpy(), y.to_numpy(), N, fill_empty_heads=False)
 
 # ---- Construcción del modelo ---- #
 #Entrada
