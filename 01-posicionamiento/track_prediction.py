@@ -18,7 +18,7 @@ from lib.filters.montecarlofilter import monte_carlo_filter
 from lib.filters.particlefilter import particle_filter
 
 #Configuración
-input_file_name = 'track_straight_01_all_sensors.mbd_window_1_4_100_median'#'track_1_rssi'#'track_straight_01_all_sensors.mbd_window_median'
+input_file_name = 'track_straight_01_all_sensors.mbd_window_3_4_100_median'#'track_1_rssi'#'track_straight_01_all_sensors.mbd_window_median'
 synthtetic_track = False#True#False
 model = 'dense'
 use_pos_z = False
@@ -27,11 +27,11 @@ remove_not_full_rows = True
 
 #Variables globales
 track_file = root_dir+'/preprocessed_inputs/paper1/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
-output_file = script_dir+'/prediction_output/paper1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
-deviation_file = script_dir+'/prediction_output/paper1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'_deviations.csv'
+output_file = script_dir+'/prediction_output/paper1/model1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
+deviation_file = script_dir+'/prediction_output/paper1/model1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'_deviations.csv'
 model_dir = script_dir+'/models/'+model
-scaler_file = model_dir+'/files/paper1/model1/scaler_1_4_100_median.pkl'
-model_file = model_dir+'/files/paper1/model1/model_1_4_100_median.tf'
+scaler_file = model_dir+'/files/paper1/model1/scaler_3_4_100_median.pkl'
+model_file = model_dir+'/files/paper1/model1/model_3_4_100_median.tf'
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 

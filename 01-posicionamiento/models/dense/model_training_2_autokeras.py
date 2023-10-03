@@ -24,11 +24,13 @@ from lib.trainingcommon import load_data
 
 
 #Variables globales
+modelname = 'model2_propio'
+windowsettings_suffix = '1_4_100_median'
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_3_4_100_median.csv'
-track_file = None#root_dir+'preprocessed_inputs/paper1/track_straight_05_all_sensors.mbd_window_3_4_100_median.csv'
-scaler_file = script_dir+'/files/model_2_autokeras.pkl'
-model_file = script_dir+'/files/model_2_autokeras.tf'
+data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
+scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
+model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
+model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
 random_seed = 42
 
 #Autokeras config
@@ -44,48 +46,31 @@ random.seed(random_seed)
 
 #Cargamos los ficheros
 X, y = load_training_data(data_file, scaler_file, include_pos_z=False, scale_y=True, remove_not_full_rows=False)
-if track_file is not None:
-  track_X, track_y = load_data(track_file, scaler_file, train_scaler_file=False, include_pos_z=False, scale_y=True, remove_not_full_rows=True)
-  X = pd.concat([X, track_X])
-  y = pd.concat([y, track_y])
 
 
 #Construimos el modelo
 #Nos basamos en el diseño descrito en el paper "Indoor Localization using RSSI and Artificial Neural Network"
 inputlength = X.shape[1]
 outputlength = y.shape[1]
-hiddenLayerLength = round(inputlength*2/3+outputlength, 0)
-print("Tamaño de la entrada: "+str(inputlength))
-print("Tamaño de la salida: "+str(outputlength))
-print("Tamaño de la capa oculta: "+str(hiddenLayerLength))
 
-input = tf.keras.layers.Input(shape=inputlength)
+input = ak.StructuredDataInput()
+hiddenLayers = ak.DenseBlock(use_batchnorm=False)(input)
+output = ak.RegressionHead(output_dim=outputlength, metrics=['mse', 'accuracy'])(hiddenLayers)
 
-#x = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-hiddenLayer = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(input)
-#hiddenLayer = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(hiddenLayer)
-#hiddenLayer = tf.keras.layers.Dropout(0.2)(hiddenLayer)
-
-output = tf.keras.layers.Dense(outputlength, activation='linear')(hiddenLayer)
-#output = tf.keras.layers.Dropout(0.2)(x)
-model = tf.keras.models.Model(inputs=input, outputs=output)
-
-model.compile(loss=loss, optimizer=optimizer, metrics=[loss, 'accuracy'] ) #mse y sgd sugeridos por chatgpt, TODO averiguar y entender por qué
-#comparacion de optimizadores https://velascoluis.medium.com/optimizadores-en-redes-neuronales-profundas-un-enfoque-pr%C3%A1ctico-819b39a3eb5
-#Seguir luchando por bajar el accuracy en regresion no es buena idea https://stats.stackexchange.com/questions/352036/why-is-accuracy-not-a-good-measure-for-regression-models
-
-# --- Evaluación mediante validación cruzada --- #
-#kf = KFold(n_splits=cross_val_splits, shuffle=True)
-#estimator = KerasRegressor(build_fn=model, optimizer=optimizer, loss=loss, metrics=[loss], epochs=epochs, batch_size=batch_size, verbose=0)
-#cross_val_scores = cross_val_score(estimator, X, y, cv=kf, scoring=cross_val_scoring)
-
+model = ak.AutoModel(
+  inputs=input,
+  outputs=output,
+  overwrite=True,
+  #objective = 'val_output_d1_accuracy',
+  seed=random_seed,
+  max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder
+)
 
 #Entrenamos
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=2, restore_best_weights=True)
 history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                     batch_size=  batch_size,
-                     epochs=  epochs, 
-                     verbose=1)
+                     verbose=2, callbacks=[callback])
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, y_test, verbose=0)
@@ -106,9 +91,8 @@ plt.show()
 '''
 
 #Guardamos el modelo
-if os.path.exists(model_file):
-  os.remove(model_file)
-model.save(model_file)
+model = model.export_model()
+save_model(model, model_file)
 
 #Sacamos valoraciones
 print("-- Resumen del modelo:")
@@ -121,5 +105,12 @@ print(model.summary())
 
 print("-- Entrenamiento final")
 print('Test loss: {:0.4f}'.format(score[0]))
+print('Val loss: {:0.4f}'.format(score[1]))
+print('Val accuracy: {:0.4f}'.format(score[2]))
 
-plot_learning_curves(history)
+
+#Guardamos la imagen resumen
+tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
+
+#plot_learning_curves(history)
+#print(score)
