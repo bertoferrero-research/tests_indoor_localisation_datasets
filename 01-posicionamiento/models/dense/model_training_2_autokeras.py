@@ -20,12 +20,12 @@ from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_dataframe
-from lib.trainingcommon import load_data
+from lib.trainingcommon import load_data, save_model
 
 
 #Variables globales
 modelname = 'model2_propio'
-windowsettings_suffix = '1_4_100_median'
+windowsettings_suffix = '3_4_100_median'
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
 scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
@@ -54,7 +54,9 @@ inputlength = X.shape[1]
 outputlength = y.shape[1]
 
 input = ak.StructuredDataInput()
-hiddenLayers = ak.DenseBlock(use_batchnorm=False)(input)
+hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(input)
+hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(hiddenLayers)
+hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=1024)(hiddenLayers)
 output = ak.RegressionHead(output_dim=outputlength, metrics=['mse', 'accuracy'])(hiddenLayers)
 
 model = ak.AutoModel(

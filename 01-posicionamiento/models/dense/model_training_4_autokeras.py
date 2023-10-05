@@ -56,7 +56,7 @@ X, y, Xmap = load_data(data_file, scaler_file, train_scaler_file=True, include_p
 #Convertimos a numpy y formato
 X = X.to_numpy()
 y = y.to_numpy()
-Xmap = Xmap.to_numpy().astype(np.float32)
+Xmap = Xmap.to_numpy()
 
 # Construimos el modelo
 
@@ -64,39 +64,54 @@ Xmap = Xmap.to_numpy().astype(np.float32)
 inputSensors = ak.StructuredDataInput()
 InputMap = ak.StructuredDataInput()
 
+# Capas ocultas para cada entrada
+hiddenLayer_sensors = ak.DenseBlock()(inputSensors)
+
+hiddenLayer_map = ak.DenseBlock()(InputMap)
+
 # Concatenamos las capas
-concat = ak.Merge()([inputSensors, InputMap])
+concat = ak.Merge()([hiddenLayer_sensors, hiddenLayer_map])
 
 # Capas ocultas tras la concatenación
-hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
+hiddenLayer = ak.DenseBlock()(concat)
 
 # Salida
-output = ak.RegressionHead(metrics=['mse', 'accuracy'])(hiddenLayer)
+output = ak.RegressionHead()(hiddenLayer)
 
 # Construimos el modelo
 model = ak.AutoModel(
     inputs=[inputSensors, InputMap],
-    outputs=output, 
-    overwrite=overwrite,
-    seed=random_seed,
-    max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
+    outputs=output, overwrite=True,
+    max_trials=20,
+    tuner='bayesian',
+    objective='val_loss', directory=autokeras_folder, project_name=autokeras_project_name)
 
 # Entrenamos
 X_train, X_test, y_train, y_test, Xmap_train, Xmap_test = train_test_split(
     X, y, Xmap, test_size=0.2)
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=2, restore_best_weights=True)
 history = model.fit([X_train, Xmap_train], y_train, validation_data=([X_test, Xmap_test], y_test),
-                    verbose=2, callbacks=[callback])
-
-# Evaluamos usando el test set
-score = model.evaluate([X_test, Xmap_test], y_test, verbose=0)
-
+                    verbose=1)
 
 #Guardamos el modelo
 model = model.export_model()
 save_model(model, model_file)
 
-#Sacamos valoraciones
+'''
+#Intentamos estimar los puntos de test
+X_test_sample = X_train#[:5000]
+y_test_sample = y_train#[:5000]
+prediction = model.predict(X_test_sample)
+y_pred = pd.DataFrame(prediction, columns=['pos_x', 'pos_y'])
+#Desescalamos
+y_test_sample = descale_dataframe(y_test_sample)
+y_pred = descale_dataframe(y_pred)
+
+plt.plot(y_test_sample['pos_y'].values, y_test_sample['pos_x'].values, 'go-', label='Real', linewidth=1)
+#plt.plot(y_pred['pos_y'].values, y_pred['pos_x'].values, 'ro-', label='Calculada', linewidth=1)
+plt.show()
+'''
+
+# Sacamos valoraciones
 print("-- Resumen del modelo:")
 print(model.summary())
 
@@ -105,14 +120,3 @@ print(model.summary())
 # print("Puntuación media:", cross_val_scores.mean())
 # print("Desviación estándar:", cross_val_scores.std())
 
-print("-- Entrenamiento final")
-print('Test loss: {:0.4f}'.format(score[0]))
-print('Val loss: {:0.4f}'.format(score[1]))
-print('Val accuracy: {:0.4f}'.format(score[2]))
-
-
-#Guardamos la imagen resumen
-tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
-
-#plot_learning_curves(history)
-#print(score)
