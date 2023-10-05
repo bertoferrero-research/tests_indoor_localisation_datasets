@@ -27,11 +27,11 @@ remove_not_full_rows = True
 
 #Variables globales
 track_file = root_dir+'/preprocessed_inputs/paper1/'+("synthetic_tracks/" if synthtetic_track is True else "")+input_file_name+'.csv'
-output_file = script_dir+'/prediction_output/paper1/model1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
-deviation_file = script_dir+'/prediction_output/paper1/model1/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'_deviations.csv'
+output_file = script_dir+'/prediction_output/paper1/model2_propio/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'.csv'
+deviation_file = script_dir+'/prediction_output/paper1/model2_propio/'+("synthetic_tracks/" if synthtetic_track is True else "")+model+'_'+input_file_name+'_deviations.csv'
 model_dir = script_dir+'/models/'+model
-scaler_file = model_dir+'/files/paper1/model1/scaler_3_12_100_tss.pkl'
-model_file = model_dir+'/files/paper1/model1/model_3_12_100_tss.tf'
+scaler_file = model_dir+'/files/paper1/model2_propio/scaler_3_12_100_tss.pkl'
+model_file = model_dir+'/files/paper1/model2_propio/model_3_12_100_tss.tf'
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
