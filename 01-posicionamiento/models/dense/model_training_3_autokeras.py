@@ -65,10 +65,12 @@ inputSensors = ak.StructuredDataInput()
 InputMap = ak.StructuredDataInput()
 
 # Concatenamos las capas
-concat = ak.Merge()([inputSensors, InputMap])
+concat = ak.Merge(merge_type='concatenate')([inputSensors, InputMap])
 
 # Capas ocultas tras la concatenación
-hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
+hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(concat)
+hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(concat)
+hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(concat)
 
 # Salida
 output = ak.RegressionHead(metrics=['mse', 'accuracy'])(hiddenLayer)
