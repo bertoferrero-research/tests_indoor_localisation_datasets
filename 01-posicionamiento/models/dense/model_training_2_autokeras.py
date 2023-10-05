@@ -25,7 +25,7 @@ from lib.trainingcommon import load_data, save_model
 
 #Variables globales
 modelname = 'model2_propio'
-windowsettings_suffix = '3_4_100_median'
+windowsettings_suffix = '3_12_100_tss'
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
 scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'

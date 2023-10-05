@@ -51,8 +51,12 @@ X = X.values.reshape(X.shape[0], X.shape[1], 1)
 
 #Creamos el modelo
 input = ak.Input()
-hiddenLayers = ak.ConvBlock()(input)
-hiddenLayers = ak.DenseBlock(use_batchnorm=False)(hiddenLayers)
+hiddenLayers = ak.ConvBlock(kernel_size=3, separable=False, max_pooling=False, filters=32, num_blocks=1, num_layers=2)(input)
+hiddenLayers = ak.ConvBlock(kernel_size=3, separable=False, max_pooling=False, filters=32, num_blocks=1, num_layers=1)(hiddenLayers)
+hiddenLayers = ak.ConvBlock(kernel_size=3, separable=False, max_pooling=False, filters=64, num_blocks=1, num_layers=1)(hiddenLayers)
+hiddenLayers = ak.ConvBlock(kernel_size=3, separable=False, max_pooling=False, filters=32, num_blocks=1, num_layers=2)(hiddenLayers)
+hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=16)(hiddenLayers)
+hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(hiddenLayers)
 output = ak.RegressionHead(output_dim=y.shape[1], metrics=['mse', 'accuracy'])(hiddenLayers)
 
 model = ak.AutoModel(

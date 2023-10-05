@@ -1,0 +1,20 @@
+Value             |Best Value So Far |Hyperparameter
+3                 |                 |conv_block_1/kernel_size
+False             |             |conv_block_1/separable
+False             |             |conv_block_1/max_pooling
+3                 |                 |conv_block_1/num_blocks
+2                 |                 |conv_block_1/num_layers
+32                |                |conv_block_1/filters_0_0
+32                |                |conv_block_1/filters_0_1
+0                 |                 |conv_block_1/dropout
+32                |                |conv_block_1/filters_1_0
+64                |                |conv_block_1/filters_1_1
+32                                |conv_block_1/filters_2_0
+32                                |conv_block_1/filters_2_1
+2                 |                 |dense_block_1/num_layers
+16                |                |dense_block_1/units_0
+0                 |                 |dense_block_1/dropout
+512               |                |dense_block_1/units_1
+0                 |                 |regression_head_1/dropout
+adam              |             |optimizer
+0.001             |            |learning_rate
