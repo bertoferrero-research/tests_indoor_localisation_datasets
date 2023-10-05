@@ -25,6 +25,7 @@ def load_data(data_file: str, scaler_file: str = None, train_scaler_file: bool =
     Xmap = None
     if not_valid_sensor_value is not None and return_valid_sensors_map:
         Xmap = X.ne(not_valid_sensor_value)
+        Xmap = Xmap.astype(np.int32)
         # Tambien se podría haber hecho directamente Xmap = X != 100
 
     # Escalamos
