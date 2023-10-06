@@ -22,11 +22,12 @@ from lib.trainingcommon import load_data
 
 
 #Variables globales
-data_file = script_dir+'/../../../preprocessed_inputs/fingerprint_history_window_median.csv'
-#track_file = script_dir+'/../../../preprocessed_inputs/synthetic_tracks/track_1_rssi_12h.csv'
-scaler_file = script_dir+'/files/scaler_autokeras.pkl'
-model_file = script_dir+'/files/model_autokeras'
-model_image_file = script_dir+'/output/model_plot.png'
+modelname = 'model1_rejilladinamica_3x3_3x3'
+windowsettings_suffix = '1_4_100_median'
+data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
+scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
+model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
+model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
 random_seed = 42
 cell_amount_x = 3
 cell_amount_y = 3
@@ -34,6 +35,7 @@ zoom_level = 2
 
 #Autokeras config
 max_trials = 50
+overwrite = True
 autokeras_project_name = 'posicionamiento_clasificacion2'
 auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
@@ -72,21 +74,22 @@ output_d1 = ak.ClassificationHead(num_classes=outputlength_dim1, multi_label=Fal
 #Parte 2 - Dimension 2
 concatenate_input_d2 = ak.Merge(name='concatenate_input_d2')([input_rssi, output_d1])
 hiddenLayers_d2 = ak.DenseBlock(use_batchnorm=False, name='hidden_layers_d2_1')(concatenate_input_d2)
-output_d2 = ak.ClassificationHead(num_classes=outputlength_dim1, multi_label=False, name='output_d2')(hiddenLayers_d2)
+output_d2 = ak.ClassificationHead(num_classes=outputlength_dim1, multi_label=False, name='output_d2', metrics=['mse', 'accuracy'])(hiddenLayers_d2)
 
 
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=2, restore_best_weights=True)
 model = ak.AutoModel(inputs=input_rssi, outputs=[output_d1, output_d2],
-    overwrite=False,
-    #objective = 'val_output_d1_accuracy',
+    overwrite=overwrite,
+    #objective = 'val_output_d2_accuracy',
     max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
 
 #Entrenamos
+callback1 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d1_accuracy', min_delta=0.0001, patience=2, restore_best_weights=True)
+callback2 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d2_accuracy', min_delta=0.0001, patience=2, restore_best_weights=True)
 X_train, X_test, y_dim1_train, y_dim1_test, y_dim2_train, y_dim2_test = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
 history = model.fit(X_train, [y_dim1_train, y_dim2_train], validation_data=(X_test, [y_dim1_test, y_dim2_test]),
                      #batch_size=  batch_size,
                      #epochs=  epochs, 
-                     verbose=1, callbacks=[callback])
+                     verbose=2, callbacks=[callback1, callback2])
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, [y_dim1_test, y_dim2_test], verbose=0)
@@ -100,16 +103,20 @@ save_model(model, model_file)
 print("-- Resumen del modelo:")
 print(model.summary())
 
-print("-- Entrenamiento")
+# print("-- Evaluación cruzada")
+# print("Puntuaciones de validación cruzada:", cross_val_scores)
+# print("Puntuación media:", cross_val_scores.mean())
+# print("Desviación estándar:", cross_val_scores.std())
+
+print(score)
+print("-- Entrenamiento final")
 print('Test loss: {:0.4f}'.format(score[0]))
+print('Val loss: {:0.4f}'.format(score[1]))
+print('Val accuracy: {:0.4f}'.format(score[2]))
+
 
 #Guardamos la imagen resumen
 tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
 
 #plot_learning_curves(history)
-
-# print(model.get_config())
-# print(model.optimizer.get_config())
-# print(model.loss)
-# print(model.optimizer)
-# print(model.history.params)
+#print(score)

@@ -21,21 +21,20 @@ from lib.trainingcommon import load_data
 
 
 #Variables globales
-modelname = 'model1'
+modelname = 'model3_rejilla7x6'
 windowsettings_suffix = '1_4_100_median'
-script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
 scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
 model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
 model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
 random_seed = 42
-cell_amount_x = 9
-cell_amount_y = 9
+cell_amount_x = 7
+cell_amount_y = 6
 
 #Autokeras config
 max_trials = 50
 overwrite = True
-autokeras_project_name = 'posicionamiento_clasificacion1'
+autokeras_project_name = 'posicionamiento_clasificacion3'
 auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
 #Cargamos la semilla de los generadores aleatorios

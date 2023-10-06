@@ -29,7 +29,7 @@ from sklearn.model_selection import train_test_split
 # Variables globales
 
 modelname = 'model3_extrainfo'
-windowsettings_suffix = '1_4_100_median'
+windowsettings_suffix = '1_12_100_median'
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
 scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
@@ -69,8 +69,8 @@ concat = ak.Merge(merge_type='concatenate')([inputSensors, InputMap])
 
 # Capas ocultas tras la concatenación
 hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(concat)
-hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(concat)
-hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(concat)
+hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(hiddenLayer)
+hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(hiddenLayer)
 
 # Salida
 output = ak.RegressionHead(metrics=['mse', 'accuracy'])(hiddenLayer)
