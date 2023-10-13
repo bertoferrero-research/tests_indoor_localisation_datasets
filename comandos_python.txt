@@ -1,1 +1,4 @@
 py -m pip -> ejecuta pip dentro del entorno virtual
+python3 -m pip
+source ./.venv/bin/activate -> activa el entorno virtual
+deactivate -> desactiva el entorno virtual

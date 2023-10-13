@@ -79,17 +79,18 @@ output_d2 = ak.ClassificationHead(num_classes=outputlength_dim1, multi_label=Fal
 
 model = ak.AutoModel(inputs=input_rssi, outputs=[output_d1, output_d2],
     overwrite=overwrite,
-    #objective = 'val_output_d2_accuracy',
+    objective = 'val_loss',
     max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
 
 #Entrenamos
 callback1 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d1_accuracy', min_delta=0.0001, patience=2, restore_best_weights=True)
 callback2 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d2_accuracy', min_delta=0.0001, patience=2, restore_best_weights=True)
+callback3 = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=2, restore_best_weights=True)
 X_train, X_test, y_dim1_train, y_dim1_test, y_dim2_train, y_dim2_test = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
 history = model.fit(X_train, [y_dim1_train, y_dim2_train], validation_data=(X_test, [y_dim1_test, y_dim2_test]),
                      #batch_size=  batch_size,
                      #epochs=  epochs, 
-                     verbose=2, callbacks=[callback1, callback2])
+                     verbose=2, callbacks=[callback1, callback2, callback3])
 
 # Evaluamos usando el test set
 score = model.evaluate(X_test, [y_dim1_test, y_dim2_test], verbose=0)
