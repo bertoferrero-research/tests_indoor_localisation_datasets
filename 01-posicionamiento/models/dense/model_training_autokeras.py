@@ -44,7 +44,7 @@ for windowsettings_suffix in windowsettingslist:
   random_seed = 42
 
   #Autokeras config
-  max_trials = 100
+  max_trials = 50
   overwrite = True
   autokeras_project_name = 'dense_model_1'
   auokeras_folder = root_dir+'/tmp/autokeras_training/'
