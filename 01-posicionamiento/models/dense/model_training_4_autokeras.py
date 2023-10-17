@@ -25,98 +25,129 @@ from sklearn.model_selection import KFold
 from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
 
+# -- Configuración -- #
 
-# Variables globales
-
-modelname = 'model4_extrainfo_full'
-windowsettings_suffix = '1_4_100_median'
-script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
-scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
-model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
-model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
+# Variables globales y configuración
+modelname = 'M4-model4_extrainfo_full'
 random_seed = 42
-
+training_to_design = True #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
+# Keras config
+use_gpu = False
 # Autokeras config
 max_trials = 50
-overwrite = True
-autokeras_project_name = 'dense_modelo4'
-auokeras_folder = root_dir+'/tmp/autokeras_training/'
+overwrite = False
+tuner = 'bayesian'
+
+#Configuración de las ventanas a usar
+windowsettingslist = [
+  '1_4_100_median',
+  '3_4_100_median',
+  '1_12_100_median',
+  '3_12_100_median',
+  '3_12_100_tss'
+]
+
+# -- END Configuración -- #
+
+#Si entrenamos para diseño, solo usamos una ventana
+if training_to_design:
+    windowsettingslist = [windowsettingslist[0]]
 
 # Cargamos la semilla de los generadores aleatorios
 np.random.seed(random_seed)
 random.seed(random_seed)
 
-# ---- Construcción del modelo ---- #
+#Si no usamos GPU forzamos a usar CPU
+if not use_gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"    
 
-# Cargamos los ficheros
-X, y, Xmap = load_data(data_file, scaler_file, train_scaler_file=True, include_pos_z=False,
-                       scale_y=True, not_valid_sensor_value=100, return_valid_sensors_map=True)
+# ---- Entrenamiento del modelo ---- #
 
-#Convertimos a numpy y formato
-X = X.to_numpy()
-y = y.to_numpy()
-Xmap = Xmap.to_numpy()
+#Recorrido de las configuraciones de ventana
+for windowsettings_suffix in windowsettingslist:
 
-# Construimos el modelo
+    print("---- Entrenamiento del modelo ----")
+    print("Configuración de la ventana: "+windowsettings_suffix)
 
-# Entradas
-inputSensors = ak.StructuredDataInput(name='input_sensors')
-InputMap = ak.StructuredDataInput(name='input_map')
+    #Rutas
+    data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
+    scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
+    model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
+    model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'    
+    autokeras_project_name = modelname
+    auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
-# Capas ocultas para cada entrada
-hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors')(inputSensors)
-hiddenLayer_map = ak.DenseBlock(use_batchnorm=False, name='dense_map')(InputMap)
+    # ---- Construcción del modelo ---- #
 
-# Concatenamos las capas
-concat = ak.Merge()([hiddenLayer_sensors, hiddenLayer_map])
+    # Cargamos los ficheros
+    X, y, Xmap = load_data(data_file, scaler_file, train_scaler_file=True, include_pos_z=False,
+                        scale_y=True, not_valid_sensor_value=100, return_valid_sensors_map=True)
 
-# Capas ocultas tras la concatenación
-hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
+    #Convertimos a numpy y formato
+    X = X.to_numpy()
+    y = y.to_numpy()
+    Xmap = Xmap.to_numpy()
 
-# Salida
-output = ak.RegressionHead(metrics=['mse', 'accuracy'])(hiddenLayer)
+    # Construimos el modelo
 
-# Construimos el modelo
-model = ak.AutoModel(
-    inputs=[inputSensors, InputMap],
-    outputs=output, 
-    overwrite=overwrite,
-    seed=random_seed,
-    max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
+    # Entradas
+    inputSensors = ak.StructuredDataInput(name='input_sensors')
+    InputMap = ak.StructuredDataInput(name='input_map')
 
-# Entrenamos
-X_train, X_test, y_train, y_test, Xmap_train, Xmap_test = train_test_split(
-    X, y, Xmap, test_size=0.2)
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=2, restore_best_weights=True)
-history = model.fit([X_train, Xmap_train], y_train, validation_data=([X_test, Xmap_test], y_test),
-                    verbose=2, callbacks=[callback])
+    # Capas ocultas para cada entrada
+    hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors')(inputSensors)
+    hiddenLayer_map = ak.DenseBlock(use_batchnorm=False, name='dense_map')(InputMap)
 
-# Evaluamos usando el test set
-score = model.evaluate([X_test, Xmap_test], y_test, verbose=0)
+    # Concatenamos las capas
+    concat = ak.Merge()([hiddenLayer_sensors, hiddenLayer_map])
 
+    # Capas ocultas tras la concatenación
+    hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
 
-#Guardamos el modelo
-model = model.export_model()
-save_model(model, model_file)
+    # Salida
+    output = ak.RegressionHead(metrics=['mse', 'accuracy'])(hiddenLayer)
 
-#Sacamos valoraciones
-print("-- Resumen del modelo:")
-print(model.summary())
+    # Construimos el modelo
+    model = ak.AutoModel(
+        inputs=[inputSensors, InputMap],
+        outputs=output, 
+        overwrite=overwrite,
+        seed=random_seed,
+        tuner=tuner,
+        max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
 
-# print("-- Evaluación cruzada")
-# print("Puntuaciones de validación cruzada:", cross_val_scores)
-# print("Puntuación media:", cross_val_scores.mean())
-# print("Desviación estándar:", cross_val_scores.std())
+    # Entrenamos
+    X_train, X_test, y_train, y_test, Xmap_train, Xmap_test = train_test_split(
+        X, y, Xmap, test_size=0.2)
+    callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
+    history = model.fit([X_train, Xmap_train], y_train, validation_data=([X_test, Xmap_test], y_test),
+                        verbose=(1 if training_to_design else 2), callbacks=[callback])
 
-print("-- Entrenamiento final")
-print('Test loss: {:0.4f}'.format(score[0]))
-print('Val loss: {:0.4f}'.format(score[1]))
-print('Val accuracy: {:0.4f}'.format(score[2]))
+    # Evaluamos usando el test set
+    score = model.evaluate([X_test, Xmap_test], y_test, verbose=0)
 
 
-#Guardamos la imagen resumen
-tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
+    #Guardamos el modelo
+    model = model.export_model()
+    save_model(model, model_file)
 
-#plot_learning_curves(history)
-#print(score)
+    #Sacamos valoraciones
+    print("-- Resumen del modelo:")
+    print(model.summary())
+
+    # print("-- Evaluación cruzada")
+    # print("Puntuaciones de validación cruzada:", cross_val_scores)
+    # print("Puntuación media:", cross_val_scores.mean())
+    # print("Desviación estándar:", cross_val_scores.std())
+
+    print("-- Entrenamiento final")
+    print('Test loss: {:0.4f}'.format(score[0]))
+    print('Val loss: {:0.4f}'.format(score[1]))
+    print('Val accuracy: {:0.4f}'.format(score[2]))
+
+
+    #Guardamos la imagen resumen
+    tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
+
+    #plot_learning_curves(history)
+    #print(score)
