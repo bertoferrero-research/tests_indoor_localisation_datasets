@@ -30,12 +30,12 @@ from sklearn.model_selection import train_test_split
 # Variables globales y configuración
 modelname = 'M4-model4_extrainfo_full'
 random_seed = 42
-training_to_design = True #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
+training_to_design = False #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
 # Keras config
 use_gpu = False
 # Autokeras config
 max_trials = 50
-overwrite = False
+overwrite = True
 tuner = 'bayesian'
 
 #Configuración de las ventanas a usar
@@ -94,15 +94,33 @@ for windowsettings_suffix in windowsettingslist:
     inputSensors = ak.StructuredDataInput(name='input_sensors')
     InputMap = ak.StructuredDataInput(name='input_map')
 
-    # Capas ocultas para cada entrada
-    hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors')(inputSensors)
-    hiddenLayer_map = ak.DenseBlock(use_batchnorm=False, name='dense_map')(InputMap)
+    if training_to_design:
 
-    # Concatenamos las capas
-    concat = ak.Merge()([hiddenLayer_sensors, hiddenLayer_map])
+        # Capas ocultas para cada entrada
+        hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors')(inputSensors)
+        hiddenLayer_map = ak.DenseBlock(use_batchnorm=False, name='dense_map')(InputMap)
 
-    # Capas ocultas tras la concatenación
-    hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
+        # Concatenamos las capas
+        concat = ak.Merge()([hiddenLayer_sensors, hiddenLayer_map])
+
+        # Capas ocultas tras la concatenación
+        hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
+
+    else:
+        # Capas ocultas para cada entrada
+        hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors_1', num_layers=1, num_units=64)(inputSensors)
+        hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors_2', num_layers=1, num_units=512)(hiddenLayer_sensors)
+
+        hiddenLayer_map = ak.DenseBlock(use_batchnorm=False, name='dense_map', num_layers=1, num_units=1024)(InputMap)
+        hiddenLayer_map = ak.DenseBlock(use_batchnorm=False, name='dense_map', num_layers=1, num_units=32)(hiddenLayer_map)
+        hiddenLayer_map = ak.DenseBlock(use_batchnorm=False, name='dense_map', num_layers=1, num_units=128)(hiddenLayer_map)
+
+        # Concatenamos las capas
+        concat = ak.Merge(merge_type='concatenate')([hiddenLayer_sensors, hiddenLayer_map])
+
+        # Capas ocultas tras la concatenación
+        hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(concat)
+        hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=64)(hiddenLayer)
 
     # Salida
     output = ak.RegressionHead(metrics=['mse', 'accuracy'])(hiddenLayer)
