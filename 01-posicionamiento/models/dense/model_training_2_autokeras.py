@@ -22,13 +22,41 @@ from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_dataframe
 from lib.trainingcommon import load_data, save_model
 
+# Variables globales y configuración
+modelname = 'M2-model2_propio'
+random_seed = 42
+training_to_design = False #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
+# Keras config
+use_gpu = False
+# Autokeras config
+max_trials = 50
+overwrite = True
+tuner = 'bayesian'
+batch_size = 1024
+
 windowsettingslist = [
   '1_4_100_median',
   '3_4_100_median',
-  '1_12_100_median',
-  '3_12_100_median',
-  '3_12_100_tss'
+  #'1_12_100_median',
+  #'3_12_100_median',
+  #'3_12_100_tss'
 ]
+
+# -- END Configuración -- #
+ 
+#Si entrenamos para diseño, solo usamos una ventana
+if training_to_design:
+    windowsettingslist = [windowsettingslist[0]]
+
+# Cargamos la semilla de los generadores aleatorios
+np.random.seed(random_seed)
+random.seed(random_seed)
+
+#Si no usamos GPU forzamos a usar CPU
+if not use_gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"    
+
+# ---- Entrenamiento del modelo ---- #
 
 for windowsettings_suffix in windowsettingslist:
 
@@ -36,22 +64,12 @@ for windowsettings_suffix in windowsettingslist:
   print("Configuración de la ventana: "+windowsettings_suffix)
 
   #Variables globales
-  modelname = 'M2-model2_propio'
-  script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
   data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
   scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
   model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
   model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
-  random_seed = 42
-
-  #Autokeras config
-  max_trials = 50
-  autokeras_project_name = 'dense_model_2'
+  autokeras_project_name = modelname
   auokeras_folder = root_dir+'/tmp/autokeras_training/'
-
-  #Cargamos la semilla de los generadores aleatorios
-  np.random.seed(random_seed)
-  random.seed(random_seed)
 
   # ---- Construcción del modelo ---- #
 
@@ -76,17 +94,18 @@ for windowsettings_suffix in windowsettingslist:
   model = ak.AutoModel(
     inputs=input,
     outputs=output,
-    overwrite=True,
+    overwrite=overwrite,
     #objective = 'val_output_d1_accuracy',
     seed=random_seed,
-    max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder
+    max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder,
+    tuner=tuner
   )
 
   #Entrenamos
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
   callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
   history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                      verbose=2, callbacks=[callback])
+                        verbose=(1 if training_to_design else 2), callbacks=[callback], batch_size=batch_size)
 
   # Evaluamos usando el test set
   score = model.evaluate(X_test, y_test, verbose=0)
