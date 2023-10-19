@@ -1,1 +1,2 @@
 Diseño 1 → Doble resolución empleando simpre una rejilla de 3x3, consiguiendo con ello emular a la rejilla estática de 9x9
+Diseño 2 -> La rejilla dinámica tiene una salida de 3x3 y una de 9x9.
