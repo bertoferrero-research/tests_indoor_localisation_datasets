@@ -26,37 +26,57 @@ from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
 
 
+# -- Configuración -- #
+
+# Variables globales y configuración
+modelname = 'M3-model3_extrainfo'
+random_seed = 42
+training_to_design = False #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
+# Keras config
+use_gpu = False
+# Autokeras config
+max_trials = 50
+overwrite = True
+tuner = 'bayesian'
+batch_size = 1024
+
+#Configuración de las ventanas a usar
 windowsettingslist = [
   '1_4_100_median',
-  #'3_4_100_median',
-  #'1_12_100_median',
-  #'3_12_100_median',
-  #'3_12_100_tss'
+  '3_4_100_median',
+  '1_12_100_median',
+  '3_12_100_median',
+  '3_12_100_tss'
 ]
+
+# -- END Configuración -- #
+ 
+#Si entrenamos para diseño, solo usamos una ventana
+if training_to_design:
+    windowsettingslist = [windowsettingslist[0]]
+
+# Cargamos la semilla de los generadores aleatorios
+np.random.seed(random_seed)
+random.seed(random_seed)
+
+#Si no usamos GPU forzamos a usar CPU
+if not use_gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"    
+
+# ---- Entrenamiento del modelo ---- #
 
 for windowsettings_suffix in windowsettingslist:
 
     print("---- Entrenamiento del modelo ----")
     print("Configuración de la ventana: "+windowsettings_suffix)
 
-    # Variables globales
-
-    modelname = 'M3-model3_extrainfo'
+    #Rutas
     data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
     scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
     model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
     model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
-    random_seed = 42
-
-    # Autokeras config
-    max_trials = 50
-    overwrite = False
-    autokeras_project_name = 'dense_modelo3'
+    autokeras_project_name = modelname
     auokeras_folder = root_dir+'/tmp/autokeras_training/'
-
-    # Cargamos la semilla de los generadores aleatorios
-    np.random.seed(random_seed)
-    random.seed(random_seed)
 
     # ---- Construcción del modelo ---- #
 
@@ -80,10 +100,12 @@ for windowsettings_suffix in windowsettingslist:
 
     # Capas ocultas tras la concatenación
     #Para el diseñado
-    hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
-    # hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(concat)
-    # hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(hiddenLayer)
-    # hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=256)(hiddenLayer)
+    if training_to_design:
+        hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
+    else:
+        hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(concat)
+        hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(hiddenLayer)
+        hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(hiddenLayer)
 
     # Salida
     output = ak.RegressionHead(metrics=['mse', 'accuracy'])(hiddenLayer)
@@ -93,8 +115,8 @@ for windowsettings_suffix in windowsettingslist:
         inputs=[inputSensors, InputMap],
         outputs=output, 
         overwrite=overwrite,
+        tuner=tuner,
         seed=random_seed,
-        tuner = 'bayesian',
         max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
 
     # Entrenamos
@@ -102,7 +124,7 @@ for windowsettings_suffix in windowsettingslist:
         X, y, Xmap, test_size=0.2)
     callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
     history = model.fit([X_train, Xmap_train], y_train, validation_data=([X_test, Xmap_test], y_test),
-                        verbose=2, callbacks=[callback])
+                        verbose=(1 if training_to_design else 2), callbacks=[callback], batch_size=batch_size)
 
     # Evaluamos usando el test set
     score = model.evaluate([X_test, Xmap_test], y_test, verbose=0)
