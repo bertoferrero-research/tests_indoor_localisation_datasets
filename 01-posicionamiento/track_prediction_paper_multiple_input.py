@@ -11,7 +11,7 @@ import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
 root_dir = script_dir+'/../'
 sys.path.insert(1, root_dir)
-from lib.trainingcommon import load_real_track_data
+from lib.trainingcommon import load_real_track_data, load_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_pos_y
 from lib.filters.montecarlofilter import monte_carlo_filter
@@ -60,7 +60,7 @@ for model_name in modelList:
         model_deviation_file = output_dir+'/'+track_file_prefix+'_deviations.csv'
 
         #Preparamos los datos
-        input_data, output_data = load_real_track_data(track_file, scaler_file, use_pos_z, scale_y, remove_not_full_rows)
+        input_data, output_data, input_map_data = load_data(track_file, scaler_file, include_pos_z=use_pos_z, scale_y=scale_y, not_valid_sensor_value=100, return_valid_sensors_map=True)
         #print(input_data)
 
         #Si el modelo es cnn, tenemos que darle una forma especial
@@ -71,7 +71,7 @@ for model_name in modelList:
         model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
 
         #Predecimos
-        predictions = model.predict(input_data)
+        predictions = model.predict([input_data, input_map_data])
 
         # print("-Predicciones-")
         # print("Real:")
