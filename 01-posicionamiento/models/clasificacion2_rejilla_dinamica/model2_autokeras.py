@@ -118,14 +118,14 @@ for windowsettings_suffix in windowsettingslist:
         max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
 
     #Entrenamos
-    callback1 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d1_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
-    callback2 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d2_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
+    #callback1 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d1_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
+    #callback2 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d2_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
     callback3 = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
     X_train, X_test, y_dim1_train, y_dim1_test, y_dim2_train, y_dim2_test = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
     history = model.fit(X_train, [y_dim1_train, y_dim2_train], validation_data=(X_test, [y_dim1_test, y_dim2_test]),
                         #batch_size=  batch_size,
                         #epochs=  epochs, 
-                        verbose=(1 if training_to_design else 2), callbacks=[callback1, callback2, callback3], batch_size=batch_size)
+                        verbose=(1 if training_to_design else 2), callbacks=[callback3], batch_size=batch_size)
 
     # Evaluamos usando el test set
     score = model.evaluate(X_test, [y_dim1_test, y_dim2_test], verbose=0)

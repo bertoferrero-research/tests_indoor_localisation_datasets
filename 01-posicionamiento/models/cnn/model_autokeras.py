@@ -28,10 +28,10 @@ modelname = 'M5-cnn'
 random_seed = 42
 training_to_design = False #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
 # Keras config
-use_gpu = False
+use_gpu = True
 # Autokeras config
 max_trials = 50
-overwrite = True
+overwrite = False
 tuner = 'bayesian'
 batch_size = 1024
 
@@ -136,3 +136,5 @@ for windowsettings_suffix in windowsettingslist:
 
     #plot_learning_curves(history)
     #print(score)
+
+    overwrite = True
