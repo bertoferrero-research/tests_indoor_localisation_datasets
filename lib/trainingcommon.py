@@ -738,15 +738,23 @@ def cross_val_score_multi_input(model: tf.keras.Model, X, y, cv, loss, optimizer
     return np.array(cv_score)
 
 
-def plot_learning_curves(hist):
-    plt.plot(hist.history['loss'])
-    plt.plot(hist.history['val_loss'])
+def plot_learning_curves(hist, save_file: str = None, show_plot: bool = True):
+    #Si no es diccionario bajamos al atributo history
+    if not isinstance(hist, dict):
+        hist = hist.history
+    plt.plot(hist['loss'])
+    plt.plot(hist['val_loss'])
     plt.title('Curvas de aprendizaje')
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Conjunto de entrenamiento',
                'Conjunto de validación'], loc='upper right')
-    plt.show()
+    if save_file != None:
+        plt.savefig(save_file)
+    if show_plot:
+        plt.show()
+    else:
+        plt.close()
 # endregion
 
 # region Herramientas generales
@@ -765,6 +773,34 @@ def save_model(model, model_file: str):
         except:
             shutil.rmtree(model_file)
     model.save(model_file)
+
+def save_history(history, history_file: str):
+    '''
+    Guarda el historial de un modelo en un fichero
+    Args:
+        history (keras.history): historial a guardar
+        history_file (str): ruta del fichero
+    '''
+    if os.path.exists(history_file):
+        try:
+            os.remove(history_file)
+        except:
+            shutil.rmtree(history_file)
+    with open(history_file, 'wb') as file_pi:
+        pickle.dump(history.history, file_pi)
+
+def load_history(history_file: str):
+    '''
+    Carga el historial de un modelo desde un fichero
+    Args:
+        history_file (str): ruta del fichero
+    Returns:
+        keras.history: historial cargado
+    '''
+    if os.path.exists(history_file):
+        with open(history_file, 'rb') as file_pi:
+            return pickle.load(file_pi)
+    return None
 
 # endregion
 
