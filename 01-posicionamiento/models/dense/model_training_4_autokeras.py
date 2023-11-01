@@ -9,7 +9,7 @@ from lib.trainingcommon import load_data
 from lib.trainingcommon import descale_dataframe
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import load_training_data
-from lib.trainingcommon import save_model
+from lib.trainingcommon import save_model, save_history
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -40,10 +40,10 @@ tuner = 'bayesian'
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
-  '1_4_100_median',
-  '3_4_100_median',
-  '1_12_100_median',
-  '3_12_100_median',
+  #'1_4_100_median',
+  #'3_4_100_median',
+  #'1_12_100_median',
+  #'3_12_100_median',
   '3_12_100_tss'
 ]
 
@@ -73,6 +73,7 @@ for windowsettings_suffix in windowsettingslist:
     data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
     scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
     model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
+    history_file = script_dir+'/files/paper1/'+modelname+'/history_'+windowsettings_suffix+'.pkl'
     model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'    
     autokeras_project_name = modelname
     auokeras_folder = root_dir+'/tmp/autokeras_training/'
@@ -148,6 +149,7 @@ for windowsettings_suffix in windowsettingslist:
     #Guardamos el modelo
     model = model.export_model()
     save_model(model, model_file)
+    save_history(history, history_file)
 
     #Sacamos valoraciones
     print("-- Resumen del modelo:")
@@ -169,3 +171,4 @@ for windowsettings_suffix in windowsettingslist:
 
     #plot_learning_curves(history)
     #print(score)
+    Overwrite = True

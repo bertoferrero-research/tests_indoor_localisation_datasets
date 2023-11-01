@@ -781,6 +781,9 @@ def save_history(history, history_file: str):
         history (keras.history): historial a guardar
         history_file (str): ruta del fichero
     '''
+    #Si history es none, no guardamos nada
+    if history == None:
+        return
     if os.path.exists(history_file):
         try:
             os.remove(history_file)

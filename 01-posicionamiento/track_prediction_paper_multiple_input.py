@@ -29,7 +29,7 @@ dim_y = 17.64103475472807
 
 #Configuración de los modelos a probar
 modelList = [
-    'M3-model3_extrainfo',
+    'M4-model4_extrainfo_full',
 ]
 
 #Configuración de las ventanas a predecir
@@ -49,14 +49,15 @@ for model_name in modelList:
 
         #Variables globales
         input_file_name = track_file_prefix+'_'+windowsettings_suffix
+        output_file_name = model_name+'_'+windowsettings_suffix
         track_file = root_dir+'/preprocessed_inputs/paper1/'+input_file_name+'.csv'
         model_dir = script_dir+'/models/'+model_collection
         scaler_file = model_dir+'/files/paper1/'+model_name+'/scaler_'+windowsettings_suffix+'.pkl'
         model_file = model_dir+'/files/paper1/'+model_name+'/model_'+windowsettings_suffix+'.tf'
         output_dir = script_dir+'/prediction_output/paper1/'+model_name+'/'
-        output_file = output_dir+input_file_name+'.csv'
-        deviation_file = output_dir+input_file_name+'_deviations.csv'
-        figure_file = output_dir+input_file_name+'.png'
+        output_file = output_dir+output_file_name+'.csv'
+        deviation_file = output_dir+output_file_name+'_deviations.csv'
+        figure_file = output_dir+output_file_name+'.png'
         model_deviation_file = output_dir+'/'+track_file_prefix+'_deviations.csv'
 
         #Preparamos los datos
