@@ -7,6 +7,7 @@ import math
 import os
 import sys
 import shutil
+import random
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -804,6 +805,17 @@ def load_history(history_file: str):
         with open(history_file, 'rb') as file_pi:
             return pickle.load(file_pi)
     return None
+
+def set_random_seed_value(seed: int):
+    '''
+    Establece la semilla aleatoria de numpy y tensorflow
+    Args:
+        seed (int): semilla aleatoria
+    '''
+    os.environ['PYTHONHASHSEED']=str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
 
 # endregion
 
