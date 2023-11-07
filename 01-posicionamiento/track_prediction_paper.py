@@ -29,7 +29,7 @@ dim_y = 17.64103475472807
 
 #Configuración de los modelos a probar
 modelList = [
-    'M3-model3_extrainfo',
+    'M2-model2_propio',
 ]
 
 #Configuración de las ventanas a predecir
