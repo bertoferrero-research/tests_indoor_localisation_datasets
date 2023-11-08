@@ -27,12 +27,12 @@ modelname = 'M2-model2_propio'
 random_seed = 42
 training_to_design = False #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
 # Keras config
-use_gpu = False
+use_gpu = True
 # Autokeras config
 max_trials = 50
 overwrite = True
 tuner = 'bayesian'
-batch_size = 32
+batch_size = 256
 
 windowsettingslist = [
   '1_4_100_median',

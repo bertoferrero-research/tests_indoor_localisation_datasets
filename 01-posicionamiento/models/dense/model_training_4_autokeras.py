@@ -37,7 +37,7 @@ use_gpu = True
 max_trials = 50
 overwrite = True
 tuner = 'bayesian'
-batch_size = 32
+batch_size = 256
 
 #Configuración de las ventanas a usar
 windowsettingslist = [

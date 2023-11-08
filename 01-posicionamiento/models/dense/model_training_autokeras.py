@@ -20,7 +20,18 @@ from lib.trainingcommon import plot_learning_curves
 from lib.trainingcommon import load_training_data
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import descale_dataframe
-from lib.trainingcommon import load_data, save_model
+from lib.trainingcommon import load_data, save_model, save_history, set_random_seed_value
+
+# Variables globales y configuración
+modelname = 'M1-dense_model_1'
+random_seed = 42
+# Keras config
+use_gpu = True
+# Autokeras config
+max_trials = 50
+overwrite = True
+tuner = 'bayesian'
+batch_size = 256
 
 windowsettingslist = [
   '1_4_100_median',
@@ -30,28 +41,34 @@ windowsettingslist = [
   '3_12_100_tss'
 ]
 
+# -- END Configuración -- #
+ 
+#Si entrenamos para diseño, solo usamos una ventana
+if training_to_design:
+    windowsettingslist = [windowsettingslist[0]]
+
+# Cargamos la semilla de los generadores aleatorios
+set_random_seed_value(random_seed)
+
+#Si no usamos GPU forzamos a usar CPU
+if not use_gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"    
+
+# ---- Entrenamiento del modelo ---- #
+
 for windowsettings_suffix in windowsettingslist:
 
   print("---- Entrenamiento del modelo ----")
   print("Configuración de la ventana: "+windowsettings_suffix)
 
   #Variables globales
-  modelname = 'M1-model1_paper'
   data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
   scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
   model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
+  history_file = script_dir+'/files/paper1/'+modelname+'/history_'+windowsettings_suffix+'.pkl'
   model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
-  random_seed = 42
-
-  #Autokeras config
-  max_trials = 50
-  overwrite = True
-  autokeras_project_name = 'dense_model_1'
+  autokeras_project_name = modelname
   auokeras_folder = root_dir+'/tmp/autokeras_training/'
-
-  #Cargamos la semilla de los generadores aleatorios
-  np.random.seed(random_seed)
-  random.seed(random_seed)
 
   # ---- Construcción del modelo ---- #
 
@@ -82,14 +99,15 @@ for windowsettings_suffix in windowsettingslist:
     overwrite=overwrite,
     #objective = 'val_output_d1_accuracy',
     seed=random_seed,
-    max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder
+    max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder,
+    tuner=tuner
   )
 
   #Entrenamos
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
   callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
   history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                      verbose=2, callbacks=[callback])
+                        verbose=(1 if training_to_design else 2), callbacks=[callback], batch_size=batch_size)
 
   # Evaluamos usando el test set
   score = model.evaluate(X_test, y_test, verbose=0)
@@ -112,6 +130,7 @@ for windowsettings_suffix in windowsettingslist:
   #Guardamos el modelo
   model = model.export_model()
   save_model(model, model_file)
+  save_history(history, history_file)
 
   #Sacamos valoraciones
   print("-- Resumen del modelo:")

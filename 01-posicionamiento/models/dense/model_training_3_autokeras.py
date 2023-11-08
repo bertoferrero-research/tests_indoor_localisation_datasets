@@ -35,9 +35,9 @@ training_to_design = False #Indica si estamos entrenando el modelo para diseñar
 use_gpu = True
 # Autokeras config
 max_trials = 50
-overwrite = False
+overwrite = True
 tuner = 'bayesian'
-batch_size = 32
+batch_size = 256
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
