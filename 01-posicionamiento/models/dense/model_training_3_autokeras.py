@@ -22,7 +22,6 @@ import autokeras as ak
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
 
 
