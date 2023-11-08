@@ -30,7 +30,7 @@ model_file = script_dir+'/files/model_3.h5'
 random_seed = 42
 
 #Hiperparámetros
-batch_size = 1500
+batch_size = 32
 epochs = 300
 loss = 'mse' #'mse'
 optimizer = 'adam'
@@ -53,18 +53,19 @@ inputSensors = tf.keras.layers.Input(shape=X.shape[1])
 InputMap = tf.keras.layers.Input(shape=Xmap.shape[1])
 
 #Capas ocultas para cada entrada
-hiddenLayer_sensors = tf.keras.layers.Dense(10, activation='relu')(inputSensors)
-hiddenLayer_sensors = tf.keras.layers.Dense(10, activation='relu')(hiddenLayer_sensors)
+#hiddenLayer_sensors = tf.keras.layers.Dense(10, activation='relu')(inputSensors)
+#hiddenLayer_sensors = tf.keras.layers.Dense(10, activation='relu')(hiddenLayer_sensors)
 
-hiddenLayer_map = tf.keras.layers.Dense(10, activation='relu')(InputMap)
-hiddenLayer_map = tf.keras.layers.Dense(10, activation='relu')(hiddenLayer_map)
+#hiddenLayer_map = tf.keras.layers.Dense(10, activation='relu')(InputMap)
+#hiddenLayer_map = tf.keras.layers.Dense(10, activation='relu')(hiddenLayer_map)
 
 #Concatenamos las capas
-concat = tf.keras.layers.concatenate([hiddenLayer_sensors, hiddenLayer_map])
+concat = tf.keras.layers.concatenate([inputSensors, InputMap])
 
 #Capas ocultas tras la concatenación
-hiddenLayer = tf.keras.layers.Dense(10, activation='relu')(concat)
-hiddenLayer = tf.keras.layers.Dense(10, activation='relu')(hiddenLayer)
+hiddenLayer = tf.keras.layers.Dense(512, activation='relu')(concat)
+hiddenLayer = tf.keras.layers.Dense(128, activation='relu')(hiddenLayer)
+hiddenLayer = tf.keras.layers.Dense(128, activation='relu')(hiddenLayer)
 #hiddenLayer = tf.keras.layers.Dense(hiddenLayerLength, activation='relu')(hiddenLayer)
 #hiddenLayer = tf.keras.layers.Dropout(0.2)(hiddenLayer)
 

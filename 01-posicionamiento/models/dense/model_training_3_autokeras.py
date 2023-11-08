@@ -36,7 +36,7 @@ training_to_design = False #Indica si estamos entrenando el modelo para diseñar
 use_gpu = True
 # Autokeras config
 max_trials = 50
-overwrite = True
+overwrite = False
 tuner = 'bayesian'
 batch_size = 32
 
@@ -155,3 +155,5 @@ for windowsettings_suffix in windowsettingslist:
 
     #plot_learning_curves(history)
     #print(score)
+
+    overwrite = True
