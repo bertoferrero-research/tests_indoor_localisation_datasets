@@ -1,3 +1,15 @@
+
+import sys
+import os.path
+# Referencia al directorio actual, por si ejecutamos el python en otro directorio
+script_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = script_dir+'/../../../'  # Referencia al directorio raiz del proyecto
+sys.path.insert(1, root_dir)
+from lib.trainingcommon import load_data
+from lib.trainingcommon import descale_dataframe
+from lib.trainingcommon import descale_pos_x
+from lib.trainingcommon import load_training_data
+from lib.trainingcommon import save_model, save_history, set_random_seed_value
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -11,15 +23,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout
 from sklearn.model_selection import train_test_split
-import sys
-script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
-root_dir = script_dir+'/../../../'                                                                        #Referencia al directorio raiz del proyecto
-sys.path.insert(1, root_dir)
-from lib.trainingcommon import plot_learning_curves
-from lib.trainingcommon import load_training_data
-from lib.trainingcommon import descale_pos_x
-from lib.trainingcommon import descale_dataframe
-from lib.trainingcommon import load_data, save_model, save_history
+
 
 # -- Configuración -- #
 
@@ -31,9 +35,9 @@ training_to_design = False #Indica si estamos entrenando el modelo para diseñar
 use_gpu = True
 # Autokeras config
 max_trials = 50
-overwrite = False
+overwrite = True
 tuner = 'bayesian'
-batch_size = 1024
+batch_size = 32
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
@@ -51,8 +55,7 @@ if training_to_design:
     windowsettingslist = [windowsettingslist[0]]
 
 # Cargamos la semilla de los generadores aleatorios
-np.random.seed(random_seed)
-random.seed(random_seed)
+set_random_seed_value(random_seed)
 
 #Si no usamos GPU forzamos a usar CPU
 if not use_gpu:
@@ -75,6 +78,7 @@ for windowsettings_suffix in windowsettingslist:
     autokeras_project_name = modelname
     auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
+    # ---- Construcción del modelo ---- #
 
     #Cargamos los ficheros
     X, y = load_data(data_file, scaler_file, train_scaler_file=True, include_pos_z=False, scale_y=True, remove_not_full_rows=False)
