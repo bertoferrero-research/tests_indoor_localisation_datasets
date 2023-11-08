@@ -9,7 +9,7 @@ from lib.trainingcommon import load_data
 from lib.trainingcommon import descale_dataframe
 from lib.trainingcommon import descale_pos_x
 from lib.trainingcommon import load_training_data
-from lib.trainingcommon import save_model, save_history
+from lib.trainingcommon import save_model, save_history, set_random_seed_value
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -22,8 +22,8 @@ import autokeras as ak
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
+
 
 # -- Configuración -- #
 
@@ -32,30 +32,30 @@ modelname = 'M4-model4_extrainfo_full'
 random_seed = 42
 training_to_design = False #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
 # Keras config
-use_gpu = False
+use_gpu = True
 # Autokeras config
 max_trials = 50
 overwrite = True
 tuner = 'bayesian'
+batch_size = 32
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
-  #'1_4_100_median',
-  #'3_4_100_median',
-  #'1_12_100_median',
-  #'3_12_100_median',
+  '1_4_100_median',
+  '3_4_100_median',
+  '1_12_100_median',
+  '3_12_100_median',
   '3_12_100_tss'
 ]
 
 # -- END Configuración -- #
-
+ 
 #Si entrenamos para diseño, solo usamos una ventana
 if training_to_design:
     windowsettingslist = [windowsettingslist[0]]
 
 # Cargamos la semilla de los generadores aleatorios
-np.random.seed(random_seed)
-random.seed(random_seed)
+set_random_seed_value(random_seed)
 
 #Si no usamos GPU forzamos a usar CPU
 if not use_gpu:
@@ -74,7 +74,7 @@ for windowsettings_suffix in windowsettingslist:
     scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
     model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
     history_file = script_dir+'/files/paper1/'+modelname+'/history_'+windowsettings_suffix+'.pkl'
-    model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'    
+    model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
     autokeras_project_name = modelname
     auokeras_folder = root_dir+'/tmp/autokeras_training/'
 
@@ -131,8 +131,8 @@ for windowsettings_suffix in windowsettingslist:
         inputs=[inputSensors, InputMap],
         outputs=output, 
         overwrite=overwrite,
-        seed=random_seed,
         tuner=tuner,
+        seed=random_seed,
         max_trials=max_trials, project_name=autokeras_project_name, directory=auokeras_folder)
 
     # Entrenamos
@@ -140,7 +140,7 @@ for windowsettings_suffix in windowsettingslist:
         X, y, Xmap, test_size=0.2)
     callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
     history = model.fit([X_train, Xmap_train], y_train, validation_data=([X_test, Xmap_test], y_test),
-                        verbose=(1 if training_to_design else 2), callbacks=[callback])
+                        verbose=(1 if training_to_design else 2), callbacks=[callback], batch_size=batch_size)
 
     # Evaluamos usando el test set
     score = model.evaluate([X_test, Xmap_test], y_test, verbose=0)
@@ -171,4 +171,5 @@ for windowsettings_suffix in windowsettingslist:
 
     #plot_learning_curves(history)
     #print(score)
-    Overwrite = True
+
+    overwrite = True
