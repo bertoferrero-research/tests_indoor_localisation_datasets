@@ -10,7 +10,6 @@ import autokeras as ak
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-from scikeras.wrappers import KerasRegressor
 from sklearn.model_selection import train_test_split
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
