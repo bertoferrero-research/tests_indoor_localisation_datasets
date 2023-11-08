@@ -69,9 +69,14 @@ for windowsettings_suffix in windowsettingslist:
     output_data = []
     histoypositions = []
     for index, rssi_row in rssis.iterrows():
-        # Obtenemos los tres mejores dongles (con el valor rssi más alto)
-        three_best_dongles = rssi_row.sort_values(
-            ascending=False).head(number_of_nodes).index.tolist()
+        # Extraemos las filas con valor distinto a 100 manteniendo el indice
+        three_best_dongles = rssi_row[rssi_row != 100]
+        # Obtenemos los x mejores dongles (los que tienen menor rssi)
+        three_best_dongles = three_best_dongles.sort_values(ascending=False).head(number_of_nodes).index.tolist()
+        
+        if len(three_best_dongles) < number_of_nodes:
+            print("No hay suficientes nodos")
+            continue
 
         # Localizamos cada dongle en el listado cargado y acumulamos su posición
         positions = []
