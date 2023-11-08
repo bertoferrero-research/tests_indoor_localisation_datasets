@@ -42,10 +42,6 @@ windowsettingslist = [
 
 # -- END Configuración -- #
  
-#Si entrenamos para diseño, solo usamos una ventana
-if training_to_design:
-    windowsettingslist = [windowsettingslist[0]]
-
 # Cargamos la semilla de los generadores aleatorios
 set_random_seed_value(random_seed)
 
@@ -106,7 +102,7 @@ for windowsettings_suffix in windowsettingslist:
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
   callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
   history = model.fit(X_train, y_train, validation_data=(X_test, y_test),
-                        verbose=(1 if training_to_design else 2), callbacks=[callback], batch_size=batch_size)
+                        verbose=2, callbacks=[callback], batch_size=batch_size)
 
   # Evaluamos usando el test set
   score = model.evaluate(X_test, y_test, verbose=0)
