@@ -32,11 +32,11 @@ dim_y = 17.64103475472807
 random_seed = 42
 
 windowsettingslist = [
-  #'1_4_100_median',
-  #'3_4_100_median',
-  #'1_12_100_median',
-  #'3_12_100_median',
-  '3_12_100_tss'
+  '1_4_100_median',
+  '3_4_100_median',
+  '1_12_100_median',
+  '3_12_100_median',
+  #'3_12_100_tss'
 ]
 
 # Cargamos la semilla de los generadores aleatorios
