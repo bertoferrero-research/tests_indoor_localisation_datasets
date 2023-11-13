@@ -29,6 +29,7 @@ dim_y = 17.64103475472807
 
 #Configuración de los modelos a probar
 modelList = [
+    'M1-model1_paper',
     'M2-model2_propio',
 ]
 
