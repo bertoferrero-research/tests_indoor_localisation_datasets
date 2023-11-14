@@ -167,7 +167,7 @@ for windowsettings_suffix in windowsettingslist:
 
 
     #Guardamos la imagen resumen
-    tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
+    #tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
 
     #plot_learning_curves(history)
     #print(score)
