@@ -37,7 +37,7 @@ use_gpu = True
 max_trials = 50
 overwrite = True
 tuner = 'bayesian'
-batch_size = 32
+batch_size = 256
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
@@ -138,7 +138,8 @@ for windowsettings_suffix in windowsettingslist:
 
 
     #Guardamos la imagen resumen
-    tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
+    if training_to_design:
+        tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
 
     #plot_learning_curves(history)
     #print(score)
