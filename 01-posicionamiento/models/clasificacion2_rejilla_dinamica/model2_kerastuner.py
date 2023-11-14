@@ -134,6 +134,7 @@ for windowsettings_suffix in windowsettingslist:
 
     tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=1000, validation_data=(X_test, [y_dim1_test, y_dim2_test]), 
                      verbose=2,
+                     batch_size=batch_size,
                      callbacks=[callback])
 
     model = tuner.get_best_models()[0]
