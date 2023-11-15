@@ -17,7 +17,7 @@ from lib.trainingcommon import load_training_data
 from lib.trainingcommon import posXYlist_to_grid
 from lib.trainingcommon import descale_dataframe
 from lib.trainingcommon import save_model
-from lib.trainingcommon import load_data
+from lib.trainingcommon import load_data, set_random_seed_value
 
 # -- Configuración específica -- #
 cell_amount_x = 9
@@ -30,12 +30,12 @@ modelname = 'M6-rejilla_modelo1'
 random_seed = 42
 training_to_design = False #Indica si estamos entrenando el modelo para diseñarlo o para evaluarlo
 # Keras config
-use_gpu = False
+use_gpu = True
 # Autokeras config
 max_trials = 50
 overwrite = True
 tuner = 'bayesian'
-batch_size = 1024
+batch_size = 256
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
@@ -53,8 +53,7 @@ if training_to_design:
     windowsettingslist = [windowsettingslist[0]]
 
 # Cargamos la semilla de los generadores aleatorios
-np.random.seed(random_seed)
-random.seed(random_seed)
+set_random_seed_value(random_seed)
 
 #Si no usamos GPU forzamos a usar CPU
 if not use_gpu:
@@ -121,6 +120,7 @@ for windowsettings_suffix in windowsettingslist:
     #Guardamos el modelo
     model = model.export_model()
     save_model(model, model_file)
+    save_history(history, history_file)
 
     #Sacamos valoraciones
     print("-- Resumen del modelo:")
@@ -139,7 +139,7 @@ for windowsettings_suffix in windowsettingslist:
 
 
     #Guardamos la imagen resumen
-    tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
+    #tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
 
     #plot_learning_curves(history)
     #print(score)
