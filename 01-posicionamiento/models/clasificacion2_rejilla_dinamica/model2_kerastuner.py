@@ -37,7 +37,7 @@ overwrite = True
 tuner = 'bayesian'
 batch_size = 256
 loss = 'categorical_crossentropy' #'mse'
-optimizer = 'adam'
+max_trials = 50
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
@@ -99,22 +99,31 @@ for windowsettings_suffix in windowsettingslist:
 
         #Parte 1 - Dimension 1
         input_rssi = tf.keras.Input(shape=(inputlength,), name='input_rssi')
-        hiddenLayers_d1 = tf.keras.layers.Dense(1024, activation='relu')(input_rssi)
-        hiddenLayers_d1 = tf.keras.layers.Dense(256, activation='relu')(hiddenLayers_d1)
+        hiddenLayers_d1 = tf.keras.layers.Dropout(hp.Float('dropout_input', 0.0, 0.5, step=0.1, default=0.0))(input_rssi)
         hiddenLayers_d1 = tf.keras.layers.Dense(1024, activation='relu')(hiddenLayers_d1)
+        hiddenLayers_d1 = tf.keras.layers.Dropout(hp.Float('dropout_1.2', min_value=0.0, max_value=0.5, step=0.1, default=0.0))(hiddenLayers_d1)
+        hiddenLayers_d1 = tf.keras.layers.Dense(256, activation='relu')(hiddenLayers_d1)
+        hiddenLayers_d1 = tf.keras.layers.Dropout(hp.Float('dropout_1.3', min_value=0.0, max_value=0.5, step=0.1, default=0.0))(hiddenLayers_d1)
+        hiddenLayers_d1 = tf.keras.layers.Dense(1024, activation='relu')(hiddenLayers_d1)
+        hiddenLayers_d1 = tf.keras.layers.Dropout(hp.Float('dropout_1.4', min_value=0.0, max_value=0.5, step=0.1, default=0.0))(hiddenLayers_d1)
         output_d1 = tf.keras.layers.Dense(units=outputlength_dim1, activation='softmax', name='output_d1')(hiddenLayers_d1)
 
         #Parte 2 - Dimension 2
         concatenate_input_d2 = tf.keras.layers.Concatenate()([input_rssi, output_d1])
         hiddenLayers_d2 = tf.keras.layers.Dense(32, activation='relu')(concatenate_input_d2)
+        hiddenLayers_d1 = tf.keras.layers.Dropout(hp.Float('dropout_2.1', min_value=0.0, max_value=0.5, step=0.1, default=0.0))(hiddenLayers_d1)
         hiddenLayers_d2 = tf.keras.layers.Dense(16, activation='relu')(hiddenLayers_d2)
+        hiddenLayers_d1 = tf.keras.layers.Dropout(hp.Float('dropout_2.2', min_value=0.0, max_value=0.5, step=0.1, default=0.0))(hiddenLayers_d1)
         hiddenLayers_d2 = tf.keras.layers.Dense(1024, activation='relu')(hiddenLayers_d2)
+        hiddenLayers_d1 = tf.keras.layers.Dropout(hp.Float('dropout_2.3', min_value=0.0, max_value=0.5, step=0.1, default=0.0))(hiddenLayers_d1)
         output_d2 = tf.keras.layers.Dense(outputlength_dim2, activation='softmax')(hiddenLayers_d2)
 
         model = tf.keras.Model(
             inputs=[input_rssi],
             outputs=[output_d1, output_d2]
         )
+        #Optimizador        
+        optimizer = tf.keras.optimizers.Adam(learning_rate=hp.Float('learning_rate', min_value=0.00001, max_value=0.1, step=10, sampling="log"))
         model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'], loss_weights=[0.2, 0.8] ) 
 
         return model
@@ -123,13 +132,14 @@ for windowsettings_suffix in windowsettingslist:
 
 
     X_train, X_test, y_dim1_train, y_dim1_test, y_dim2_train, y_dim2_test = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
-    tuner = keras_tuner.RandomSearch(
+    tuner = keras_tuner.BayesianOptimization(
         myhypermodel,
         objective="val_loss",
-        max_trials=50,
+        max_trials=max_trials,
         overwrite=overwrite,
         directory=auokeras_folder,
         project_name=autokeras_project_name,
+        seed=random_seed
     )
 
     tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=1000, validation_data=(X_test, [y_dim1_test, y_dim2_test]), 
