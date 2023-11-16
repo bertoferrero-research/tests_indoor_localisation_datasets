@@ -17,7 +17,7 @@ from lib.trainingcommon import load_training_data
 from lib.trainingcommon import posXYlist_to_grid
 from lib.trainingcommon import descale_dataframe
 from lib.trainingcommon import save_model
-from lib.trainingcommon import load_data, set_random_seed_value
+from lib.trainingcommon import load_data, set_random_seed_value, save_history
 
 # -- Configuración específica -- #
 cell_amount_x = 9
@@ -33,7 +33,7 @@ training_to_design = False #Indica si estamos entrenando el modelo para diseñar
 use_gpu = True
 # Autokeras config
 max_trials = 50
-overwrite = True
+overwrite = False
 tuner = 'bayesian'
 batch_size = 256
 
@@ -72,6 +72,7 @@ for windowsettings_suffix in windowsettingslist:
     data_file = root_dir+'preprocessed_inputs/paper1/fingerprint_history_window_'+windowsettings_suffix+'.csv'
     scaler_file = script_dir+'/files/paper1/'+modelname+'/scaler_'+windowsettings_suffix+'.pkl'
     model_file = script_dir+'/files/paper1/'+modelname+'/model_'+windowsettings_suffix+'.tf'
+    history_file = script_dir+'/files/paper1/'+modelname+'/history_'+windowsettings_suffix+'.pkl'
     model_image_file = script_dir+'/files/paper1/'+modelname+'/model_plot.png'
     autokeras_project_name = modelname
     auokeras_folder = root_dir+'/tmp/autokeras_training/'
@@ -143,3 +144,4 @@ for windowsettings_suffix in windowsettingslist:
 
     #plot_learning_curves(history)
     #print(score)
+    overwrite = True
