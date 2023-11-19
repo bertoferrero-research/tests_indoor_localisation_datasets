@@ -98,6 +98,6 @@ for item in data:
     plt.xlabel('capture settings')
     plt.ylabel('m')
     plt.title(name +' - Average deviation on euclidian distance')
-    #plt.savefig(os.path.join(data_base_dir, dirname, 'boxplot.png'))
+    plt.savefig(os.path.join(data_base_dir+'boxplot/', name+'-boxplot.png'))
     plt.show()
 
