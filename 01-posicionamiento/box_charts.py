@@ -74,6 +74,16 @@ data = [
             'CS4': 'M6-rejilla_modelo1_3_12_100_median.csv',
             'CS5': 'M6-rejilla_modelo1_3_12_100_tss.csv',
         }
+    },{
+        'name': 'M7',
+        'dirname': 'M7-rejilla_modelo3',
+        'data': {
+            'CS1': 'M7-rejilla_modelo3_1_4_100_median.csv',
+            'CS2': 'M7-rejilla_modelo3_3_4_100_median.csv',
+            'CS3': 'M7-rejilla_modelo3_1_12_100_median.csv',
+            'CS4': 'M7-rejilla_modelo3_3_12_100_median.csv',
+            'CS5': 'M7-rejilla_modelo3_3_12_100_tss.csv',
+        }
     },
 ]
 
@@ -89,6 +99,8 @@ for item in data:
         euc_distance = df['eclidean_distance']
         model_values[key] = euc_distance
 
+    model_amount_values = [len(x) for x in model_values.values()]
+
     # Plot
     fig, ax = plt.subplots()
     ax.boxplot(model_values.values())
@@ -98,6 +110,16 @@ for item in data:
     plt.xlabel('capture settings')
     plt.ylabel('m')
     plt.title(name +' - Average deviation on euclidian distance')
-    plt.savefig(os.path.join(data_base_dir+'boxplot/', name+'-boxplot.png'))
+    plt.savefig(os.path.join(data_base_dir+'charts/', name+'-boxplot.png'))
+    plt.show()
+
+    # Plot bar chart
+    fig, ax = plt.subplots()
+    ax.bar(model_values.keys(), model_amount_values)
+    ax.yaxis.grid(True)  # Agregar líneas de guía horizontales
+    plt.xlabel('capture settings')
+    plt.ylabel('samples')
+    plt.title('Samples used')
+    plt.savefig(os.path.join(data_base_dir+'charts/', name+'-samples.png'))
     plt.show()
 
