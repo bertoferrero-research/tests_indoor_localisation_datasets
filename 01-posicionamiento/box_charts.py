@@ -84,6 +84,16 @@ data = [
             'CS4': 'M7-rejilla_modelo3_3_12_100_median.csv',
             'CS5': 'M7-rejilla_modelo3_3_12_100_tss.csv',
         }
+    },{
+        'name': 'M8',
+        'dirname': 'M8.2-rejilladinamica_modelo2_kerastuner',
+        'data': {
+            'CS1': 'M8.2-rejilladinamica_modelo2_kerastuner_1_4_100_median.csv',
+            'CS2': 'M8.2-rejilladinamica_modelo2_kerastuner_3_4_100_median.csv',
+            'CS3': 'M8.2-rejilladinamica_modelo2_kerastuner_1_12_100_median.csv',
+            'CS4': 'M8.2-rejilladinamica_modelo2_kerastuner_3_12_100_median.csv',
+            'CS5': 'M8.2-rejilladinamica_modelo2_kerastuner_3_12_100_tss.csv',
+        }
     },
 ]
 
