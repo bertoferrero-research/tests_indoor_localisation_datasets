@@ -41,7 +41,7 @@ max_trials = 50
 
 #Configuración de las ventanas a usar
 windowsettingslist = [
-  '1_4_100_median',
+  #'1_4_100_median',
   '3_4_100_median',
   '1_12_100_median',
   '3_12_100_median',
@@ -173,7 +173,7 @@ for windowsettings_suffix in windowsettingslist:
 
 
     #Guardamos la imagen resumen
-    tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
+    #tf.keras.utils.plot_model(model, to_file=model_image_file, show_shapes=True, show_layer_names=False, show_dtype=False, show_layer_activations=False)
 
     #plot_learning_curves(history)
     #print(score)
