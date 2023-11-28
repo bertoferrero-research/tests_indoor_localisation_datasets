@@ -6,7 +6,7 @@ import os.path
 import math
 
 #Bucle para la automatización de pruebas
-loop_values = np.arange(13)
+loop_values = range(1, 13)
 file_prefix = 'FST1-'
 
 #Valores de defecto de configuración de la ventana
@@ -27,7 +27,7 @@ for testing_value in loop_values:
     sensor_filtering_tipe = def_sensor_filtering_tipe
 
     #Definimos el valor del bucle
-    min_entries_per_sensor = testing_value
+    min_valid_sensors = testing_value
 
     #Variables globales
     script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
