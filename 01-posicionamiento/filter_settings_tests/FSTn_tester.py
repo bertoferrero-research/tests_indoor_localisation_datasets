@@ -87,7 +87,7 @@ for test_value in test_values:
 		model = M1(inputlength=inputlength, outputlength=outputlength).build_model()
 
 		#Entrenamos
-		X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
+		X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=random_seed)
 		callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
 		history = model.fit(X_train, y_train, epochs=1000, batch_size=batch_size, validation_data=(X_test, y_test), callbacks=[callback], verbose=1)
 
