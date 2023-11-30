@@ -18,6 +18,7 @@ from models.M1 import M1
 # Objetivos:
 # FST1: Nº mínimo de medidas por sensor obligatorias VS error de predicción y número de muestras
 # FST2: Nº mínimo de sensores con valor obligatorio VS error de predicción y número de muestras
+# FST3: Tipo de filtrado de los sensores VS error de predicción y número de muestras
 # -- Configuración -- #
 
 # Variables globales
@@ -27,9 +28,9 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_values = list(range(1, 13))
-test_name = 'FST2'
-charts_name = 'Minimal required samples per sensor'
+test_values = ['max', 'min', 'mean', 'median', 'tss']
+test_name = 'FST3'
+charts_name = 'Filter type'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'

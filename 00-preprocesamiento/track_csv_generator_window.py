@@ -4,16 +4,17 @@ import glob
 import re
 import os.path
 import math
+from scipy import stats
 
 #Bucle para la automatización de pruebas
-loop_values = range(1, 13)
-file_prefix = 'FST2-'
+loop_values = ['max', 'min', 'mean', 'median', 'tss']
+file_prefix = 'FST3-'
 
 #Valores de defecto de configuración de la ventana
 def_min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
 def_max_window_size = 2                                                                                   #Tamaño máximo de la ventana de agrupación
 def_min_entries_per_sensor = 2                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
-def_min_valid_sensors = 1                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
+def_min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
 def_invalid_sensor_value = 100                                                                            #Valor que se asigna a los sensores invalidos
 def_sensor_filtering_tipe = 'median'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
 
@@ -27,7 +28,7 @@ for testing_value in loop_values:
     sensor_filtering_tipe = def_sensor_filtering_tipe
 
     #Definimos el valor del bucle
-    min_valid_sensors = testing_value
+    sensor_filtering_tipe = testing_value
 
     #Variables globales
     script_dir = os.path.dirname(os.path.abspath(__file__))                                                                  #Referencia al directorio actual, por si ejecutamos el python en otro directorio
@@ -89,7 +90,7 @@ for testing_value in loop_values:
                 elif sensor_filtering_tipe == 'median':
                     subdata[sensor_mac] = math.floor(np.median(list(map(lambda x: x['rssi'], sensor_registries))))
                 elif sensor_filtering_tipe == 'mode':
-                    subdata[sensor_mac] = math.floor(np.mode(list(map(lambda x: x['rssi'], sensor_registries))))
+                    subdata[sensor_mac] = math.floor(stats.mode(list(map(lambda x: x['rssi'], sensor_registries)))[0])
                 elif sensor_filtering_tipe == 'max':
                     subdata[sensor_mac] = math.floor(np.max(list(map(lambda x: x['rssi'], sensor_registries))))
                 elif sensor_filtering_tipe == 'min':
