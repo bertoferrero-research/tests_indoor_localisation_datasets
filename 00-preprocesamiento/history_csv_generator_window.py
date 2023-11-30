@@ -6,14 +6,14 @@ import os.path
 import math
 
 #Bucle para la automatización de pruebas
-loop_values = range(1, 7)
-file_prefix = 'FST1_2-'
+loop_values = range(1, 13)
+file_prefix = 'FST2-'
 
 #Valores de defecto de configuración de la ventana
 def_min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
 def_max_window_size = 2                                                                                   #Tamaño máximo de la ventana de agrupación
-def_min_entries_per_sensor = 1                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
-def_min_valid_sensors = 3                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
+def_min_entries_per_sensor = 2                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
+def_min_valid_sensors = 1                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
 def_invalid_sensor_value = 100                                                                            #Valor que se asigna a los sensores invalidos
 def_sensor_filtering_tipe = 'median'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
 
@@ -27,13 +27,13 @@ for testing_value in loop_values:
     sensor_filtering_tipe = def_sensor_filtering_tipe
 
     #Definimos el valor del bucle
-    min_entries_per_sensor = testing_value
+    min_valid_sensors = testing_value
 
     #Variables globales
     script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
     root_dir = script_dir+'/../'                                                                        #Referencia al directorio raiz del proyecto
     fingerprint_history_folder = root_dir+'/dataset/hst/set_1/'                                                 #Ruta donde se encuentran los históricos originales
-    fingerprint_history_file = root_dir+'/preprocessed_inputs/paper1/'+file_prefix+'fingerprint_history_window_'+(str(min_entries_per_sensor))+'_'+(str(min_valid_sensors))+'_'+(str(invalid_sensor_value))+'_'+sensor_filtering_tipe+'.csv'                                             #Salida del csv de tests
+    fingerprint_history_file = root_dir+'/preprocessed_inputs/paper1/'+file_prefix+'fingerprint_'+str(testing_value)+'.csv'                                             #Salida del csv de tests
     sensors_list = ['10','11','12','20','21','22','30','31','32','40', '41', '42']                      #Listado de ids de sensores segun su posición
     sensors_mac = []                                                                                    #Extraido de los ficheros
     regex_file_position = r"(\d+\.\d+_\d+\.\d+_\d+\.\d+)"                                               #regex para extraer la posición del sensor del nombre del fichero

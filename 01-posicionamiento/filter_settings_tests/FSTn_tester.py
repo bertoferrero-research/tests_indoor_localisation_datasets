@@ -27,8 +27,9 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_values = list(range(1, 7))
-test_name = 'FST1_2'
+test_values = list(range(1, 13))
+test_name = 'FST2'
+charts_name = 'Minimal required samples per sensor'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'
@@ -168,7 +169,7 @@ general_results.to_csv(general_results_file, index=False)
 #Imprimimos la gráfica
 # Primer eje con el error medio
 fig, ax1 = plt.subplots()
-ax1.set_xlabel('Minimum number of sensors with valid value')
+ax1.set_xlabel(charts_name)
 ax1.set_ylabel('Mean error (m)', color='tab:blue')
 ax1.set_ylim([0, general_results['mean_euclidean'].max()+0.5])
 plot_1 = ax1.plot(general_results['test_value'], general_results['mean_euclidean'], label='Mean error (m)', color='tab:blue', marker='o')
@@ -207,7 +208,7 @@ plt.savefig(general_figure_file)
 #Imprimimos la gráfica de cajas
 # Primer eje con el error medio
 fig, ax1 = plt.subplots()
-ax1.set_xlabel('Minimum number of sensors with valid value')
+ax1.set_xlabel(charts_name)
 ax1.set_ylabel('Error (m)')
 ax1.set_ylim([0, general_results['max_euclidean'].max()+0.5])
 plot_1 = ax1.boxplot(deviations, positions=general_results['test_value'], showfliers=True, widths=0.2)
