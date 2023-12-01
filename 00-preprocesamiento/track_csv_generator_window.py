@@ -7,8 +7,8 @@ import math
 from scipy import stats
 
 #Bucle para la automatización de pruebas
-loop_values = ['max', 'min', 'mean', 'median', 'tss']
-file_prefix = 'FST3-'
+loop_values = np.arange(1, 3.25, 0.25)
+file_prefix = 'FST4-'
 
 #Valores de defecto de configuración de la ventana
 def_min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
@@ -16,7 +16,7 @@ def_max_window_size = 2                                                         
 def_min_entries_per_sensor = 2                                                                            #Número mínimo de entradas por sensor para que el sensor se considere valido
 def_min_valid_sensors = 12                                                                                #Número mínimo de sensores validos para que la ventana se considere valida 
 def_invalid_sensor_value = 100                                                                            #Valor que se asigna a los sensores invalidos
-def_sensor_filtering_tipe = 'median'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
+def_sensor_filtering_tipe = 'max'                                                                      #Tipo de filtrado a aplicar a los sensores validos. Valores posibles: 'mean', 'median', 'mode', 'max', 'min',' tss'
 
 for testing_value in loop_values:
     #Configuración de la ventana
@@ -28,7 +28,7 @@ for testing_value in loop_values:
     sensor_filtering_tipe = def_sensor_filtering_tipe
 
     #Definimos el valor del bucle
-    sensor_filtering_tipe = testing_value
+    max_window_size = testing_value
 
     #Variables globales
     script_dir = os.path.dirname(os.path.abspath(__file__))                                                                  #Referencia al directorio actual, por si ejecutamos el python en otro directorio
