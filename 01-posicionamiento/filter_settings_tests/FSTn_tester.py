@@ -44,7 +44,7 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_name = 'FST2'
+test_name = 'FST3'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'
@@ -230,7 +230,11 @@ fig, ax1 = plt.subplots()
 ax1.set_xlabel(chart_x_label)
 ax1.set_ylabel('Error (m)')
 ax1.set_ylim([0, general_results['max_euclidean'].max()+0.5])
-plot_1 = ax1.boxplot(deviations, positions=general_results['test_value'], showfliers=True, widths=0.2)
+
+# Calculate the positions for the boxplots
+positions = np.arange(len(general_results['test_value']))
+plot_1 = ax1.boxplot(deviations, positions=positions, showfliers=True, widths=0.2)
+ax1.set_xticklabels(general_results['test_value'])
 
 # Segundo eje con la cantidad de muestras
 ax2 = ax1.twinx()
