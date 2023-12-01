@@ -21,6 +21,22 @@ from models.M1 import M1
 # FST3: Tipo de filtrado de los sensores VS error de predicción y número de muestras
 # -- Configuración -- #
 
+# Configuración por test
+test_specific_settings = {
+	'FST1': {
+		'chart_x_label': 'Minimal required measures per sensor',
+		'test_values': [1, 2, 3, 4, 5, 6],
+	},
+	'FST2': {
+		'chart_x_label': 'Minimal required sensors without empty values',
+		'test_values': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+	},
+	'FST3': {
+		'chart_x_label': 'Filter type',
+		'test_values': ['max', 'min', 'mean', 'median', 'tss'],
+	},
+}
+
 # Variables globales
 random_seed = 42
 batch_size = 256
@@ -28,9 +44,7 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_values = ['max', 'min', 'mean', 'median', 'tss']
-test_name = 'FST3'
-charts_name = 'Filter type'
+test_name = 'FST2'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'
@@ -47,6 +61,10 @@ general_boxfigure_file = output_dir+'results_box.png'
 general_results_file = output_dir+'results_data.csv'
 
 # -- END Configuración -- #
+
+# Extreamos la configuración específica de la prueba
+chart_x_label = test_specific_settings[test_name]['chart_x_label']
+test_values = test_specific_settings[test_name]['test_values']
 
 # Cargamos la semilla de los generadores aleatorios
 set_random_seed_value(random_seed)
@@ -170,7 +188,7 @@ general_results.to_csv(general_results_file, index=False)
 #Imprimimos la gráfica
 # Primer eje con el error medio
 fig, ax1 = plt.subplots()
-ax1.set_xlabel(charts_name)
+ax1.set_xlabel(chart_x_label)
 ax1.set_ylabel('Mean error (m)', color='tab:blue')
 ax1.set_ylim([0, general_results['mean_euclidean'].max()+0.5])
 plot_1 = ax1.plot(general_results['test_value'], general_results['mean_euclidean'], label='Mean error (m)', color='tab:blue', marker='o')
@@ -209,7 +227,7 @@ plt.savefig(general_figure_file)
 #Imprimimos la gráfica de cajas
 # Primer eje con el error medio
 fig, ax1 = plt.subplots()
-ax1.set_xlabel(charts_name)
+ax1.set_xlabel(chart_x_label)
 ax1.set_ylabel('Error (m)')
 ax1.set_ylim([0, general_results['max_euclidean'].max()+0.5])
 plot_1 = ax1.boxplot(deviations, positions=general_results['test_value'], showfliers=True, widths=0.2)
