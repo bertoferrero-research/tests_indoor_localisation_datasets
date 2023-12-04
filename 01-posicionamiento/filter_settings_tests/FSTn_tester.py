@@ -20,6 +20,7 @@ from models.M1 import M1
 # FST2: Nº mínimo de sensores con valor obligatorio VS error de predicción y número de muestras
 # FST3: Tipo de filtrado de los sensores VS error de predicción y número de muestras
 # FST4: Tamaño máximo de ventana VS error de predicción y número de muestras
+# FST5: Tamaño mínimo de ventana VS error de predicción y número de muestras
 # -- Configuración -- #
 
 # Configuración por test
@@ -40,6 +41,10 @@ test_specific_settings = {
 		'chart_x_label': 'Max window size',
 		'test_values': ["1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0"],
 	},
+	'FST5': {
+		'chart_x_label': 'Min window size',
+		'test_values': ["0.25", "0.5", "0.75", "1.0", "1.25", "1.5", "1.75"],
+	},
 }
 
 # Variables globales
@@ -49,7 +54,7 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_name = 'FST4'
+test_name = 'FST5'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'
