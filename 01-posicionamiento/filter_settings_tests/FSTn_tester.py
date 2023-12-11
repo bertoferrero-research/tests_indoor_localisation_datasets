@@ -68,6 +68,7 @@ history_filename = output_dir_models+'-test_variable--history.pkl'
 test_output_file = output_dir+'/predictions/'+test_name+'_predictions_-test_variable-.csv'
 general_figure_file = output_dir+'results.png'
 general_boxfigure_file = output_dir+'results_box.png'
+general_samples_frecuency_file = output_dir+'samples_frecuency.png'
 general_results_file = output_dir+'results_data.csv'
 
 # -- END Configuración -- #
@@ -82,6 +83,7 @@ set_random_seed_value(random_seed)
 # Recorremos cada valor de test_values
 general_results = []
 deviations = []
+time_diffs = []
 for test_value in test_values:
 	#Definimos ficheros
 	training_data_filename_execution = training_data_filename.replace('-test_variable-', str(test_value))
@@ -128,6 +130,7 @@ for test_value in test_values:
 
 	#Cargamos los datos de test
 	X_test, y_test = load_data(test_data_filename_execution, scaler_filename_execution, train_scaler_file=False, include_pos_z = False, scale_y=True, remove_not_full_rows=False)
+	full_data = pd.read_csv(test_data_filename_execution) #Cargamos la tabla completa para calculos adicionales como la diferencia de tiempo entre muestras
 
 	#Cargamos el modelo
 	model = tf.keras.models.load_model(model_filename_execution, custom_objects=ak.CUSTOM_OBJECTS)
@@ -136,15 +139,15 @@ for test_value in test_values:
 	predictions = model.predict(X_test)
 
 	#Componemos la salida
-	output_data = y_test.to_numpy()
+	y_test = y_test.to_numpy()
 	output_list = []
 	for index in range(0, len(predictions)):
 		listrow = {
 			'predicted_x': predictions[index][0],
 			'predicted_y': predictions[index][1],
 			#'predicted_z': predictions[index][2],
-			'real_x': output_data[index][0],
-			'real_y': output_data[index][1],
+			'real_x': y_test[index][0],
+			'real_y': y_test[index][1],
 			#'real_z': output_data[index][2],
 		}
 		output_list.append(listrow)
@@ -161,13 +164,23 @@ for test_value in test_values:
 	output_data['deviation_y'] = (output_data['predicted_y'] - output_data['real_y']).abs()
 	output_data['eclidean_distance'] = np.sqrt(np.power(output_data['deviation_x'], 2) + np.power(output_data['deviation_y'], 2))
 
+	#Calculamos la diferencia de tiempo de cada fila con la previa
+	output_data['time_diff'] = full_data['timestamp'].diff()
+
 	#Hacemos la salida de todos los datos en bruto
 	output_data.to_csv(test_output_file_execution, index=False)
 
 	#Acumulamos los datos generales
+	time_diff = output_data['time_diff'].dropna()
 	general_results.append({
 		'test_value': test_value,
 		'test_samples_amount': len(output_data),
+		'min_time_diff': time_diff.min(),
+		'max_time_diff': time_diff.max(),
+		'mean_time_diff': time_diff.mean(),
+		'q25_time_diff': time_diff.quantile(0.25),
+		'q50_time_diff': time_diff.quantile(0.50),
+		'q75_time_diff': time_diff.quantile(0.75),
 		'min_x': output_data['deviation_x'].min(),
 		'max_x': output_data['deviation_x'].max(),
 		'mean_x': output_data['deviation_x'].mean(),
@@ -189,6 +202,7 @@ for test_value in test_values:
 		'standard_deviation_euclidean': output_data['eclidean_distance'].std(),
 	})
 	deviations.append(output_data['eclidean_distance'])
+	time_diffs.append(time_diff)
 
 #Imprimimos a csv los resultados generales
 
@@ -234,25 +248,62 @@ plt.grid(which='minor', linestyle=':', linewidth='0.5', color='gray')
 plt.savefig(general_figure_file)
 
 
-#Imprimimos la gráfica de cajas
+##Imprimimos la gráfica de cajas
 # Primer eje con el error medio
 fig, ax1 = plt.subplots()
 ax1.set_xlabel(chart_x_label)
 ax1.set_ylabel('Error (m)')
-ax1.set_ylim([0, general_results['max_euclidean'].max()+0.5])
+ax1.set_ylim([0, 12])
 
 # Calculate the positions for the boxplots
-positions = np.arange(len(general_results['test_value']))
+positions = general_results['test_value']
+#si positions no es numérico, tenemos que aplicar unas posiciones generadas
+if not isinstance(positions[0], (int, float)):	
+	positions = np.arange(len(general_results['test_value']))
 plot_1 = ax1.boxplot(deviations, positions=positions, showfliers=True, widths=0.2)
 ax1.set_xticklabels(general_results['test_value'])
 
 # Segundo eje con la cantidad de muestras
 ax2 = ax1.twinx()
 ax2.set_ylabel('Samples amount', color='tab:red')
-ax2.set_ylim([0, general_results['test_samples_amount'].max()+1])
+ax2.set_ylim([0, 70])
 plot_2 = ax2.plot(general_results['test_value'], general_results['test_samples_amount'], label='Samples amount', color='tab:red', marker='o')
 ax2.tick_params(axis='y', labelcolor='tab:red')
+ax2.set_xticklabels(general_results['test_value'])
+
+# Tercer eje con la frecuencia de muestras
+ax3 = ax1.twinx()
+ax3.set_yticklabels([])  # Ocultar los valores del eje y, pero mantener las líneas del eje
+ax3.yaxis.set_label_position('left')  # Colocar la etiqueta del eje y a la izquierda
+ax3.yaxis.set_label_coords(-0.1, 0)  # Colocamos la etiqueta del eje y a la izquierda
+ax3.set_ylabel('Time difference between samples (s)', color='tab:blue')
+ax3.set_ylim([0, 12])
+plot_3 = ax3.plot(general_results['test_value'], general_results['mean_time_diff'], label='Time difference between samples (s)', color='tab:blue', marker='o')
 
 plt.xticks(general_results['test_value'])
 plt.grid(True)
 plt.savefig(general_boxfigure_file)
+
+
+# ##Tercer gráfico con la frecuencia de muestras
+# fig, ax1 = plt.subplots()
+# ax1.set_xlabel(chart_x_label)
+# ax1.set_ylabel('Time difference between samples (s)')
+# ax1.set_ylim([0, 6])
+
+# # Calculate the positions for the boxplots
+# positions = np.arange(1, len(general_results['test_value'])+1)
+# plot_1 = ax1.boxplot(time_diffs, positions=positions, showfliers=True, widths=0.2)
+# ax1.set_xticklabels(general_results['test_value'])
+
+# # Segundo eje con la cantidad de muestras
+# ax2 = ax1.twinx()
+# ax2.set_ylabel('Samples amount', color='tab:red')
+# ax2.set_ylim([0, 70])
+# plot_2 = ax2.plot(general_results['test_value'], general_results['test_samples_amount'], label='Samples amount', color='tab:red', marker='o')
+# ax2.tick_params(axis='y', labelcolor='tab:red')
+# ax2.set_xticklabels(general_results['test_value'])
+
+# plt.xticks(general_results['test_value'])
+# plt.grid(True)
+# plt.savefig(general_samples_frecuency_file)
