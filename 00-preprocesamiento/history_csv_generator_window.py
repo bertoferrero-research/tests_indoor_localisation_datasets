@@ -7,8 +7,8 @@ import math
 from scipy import stats
 
 #Bucle para la automatización de pruebas
-loop_values = np.arange(0.25, 2, 0.25)
-file_prefix = 'FST5-'
+loop_values = [10, 12]
+file_prefix = 'dataset-'
 
 #Valores de defecto de configuración de la ventana
 def_min_window_size = 0.5                                                                                 #Tamaño mínimo de la ventana de agrupación
@@ -28,7 +28,7 @@ for testing_value in loop_values:
     sensor_filtering_tipe = def_sensor_filtering_tipe
 
     #Definimos el valor del bucle
-    min_window_size = testing_value
+    min_valid_sensors = testing_value
 
     #Variables globales
     script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directorio actual, por si ejecutamos el python en otro directorio
