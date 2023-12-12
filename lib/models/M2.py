@@ -22,9 +22,9 @@ class M2(ModelsBaseClass):
         if designing:
             hiddenLayers = ak.DenseBlock(use_batchnorm=False)(input)
         else:
-            hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(input)
+            hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=1024)(input)
             hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(hiddenLayers)
-            hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=1024)(hiddenLayers)
+            hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=16)(hiddenLayers)
         
         output = ak.RegressionHead(output_dim=self.outputlength, metrics=['mse', 'accuracy'])(hiddenLayers)
 
