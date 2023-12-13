@@ -6,7 +6,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = script_dir+'/../../'  # Referencia al directorio raiz del proyecto
 sys.path.insert(1, root_dir)
 from sklearn.model_selection import train_test_split
-from lib.models.trainers import M2Trainer, M3Trainer, M4Trainer
+from lib.models.trainers import M2Trainer, M3Trainer, M4Trainer, M5Trainer
 import autokeras as ak
 import random
 import math
@@ -26,7 +26,8 @@ models = [
     # 'M1', #M1 no es necesario, ya está diseñado
     #'M2'
     #'M3', #Pendiente
-    'M4'
+    #'M4', #Pendiente
+    'M5'
 ]
 
 # Dataset a emplear
