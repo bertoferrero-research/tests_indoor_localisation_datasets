@@ -4,3 +4,4 @@ from .M3 import M3
 from .M4 import M4
 from .M5 import M5
 from .M6 import M6
+from .M7 import M7
