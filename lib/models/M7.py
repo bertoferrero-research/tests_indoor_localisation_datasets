@@ -22,6 +22,8 @@ class M7(ModelsBaseClass):
         if designing:
             layer = ak.DenseBlock(use_batchnorm=False)(input)
         else:
+            #Pendiente
+            raise NotImplementedError
             layer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=1024)(input)
             layer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(layer)
             layer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(layer)

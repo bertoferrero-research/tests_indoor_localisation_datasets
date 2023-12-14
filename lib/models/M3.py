@@ -31,8 +31,7 @@ class M3(ModelsBaseClass):
         if designing:
             hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
         else:
-            hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=512)(concat)
-            hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(hiddenLayer)
+            hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=1024)(concat)
             hiddenLayer = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(hiddenLayer)
 
         # Salida

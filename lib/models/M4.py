@@ -36,6 +36,8 @@ class M4(ModelsBaseClass):
             hiddenLayer = ak.DenseBlock(use_batchnorm=False)(concat)
 
         else:
+            #Pendiente
+            raise NotImplementedError
             # Capas ocultas para cada entrada
             hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors_1', num_layers=1, num_units=64)(inputSensors)
             hiddenLayer_sensors = ak.DenseBlock(use_batchnorm=False, name='dense_sensors_2', num_layers=1, num_units=512)(hiddenLayer_sensors)

@@ -24,6 +24,8 @@ class M5(ModelsBaseClass):
             hiddenLayers = ak.ConvBlock()(input)
             hiddenLayers = ak.DenseBlock()(hiddenLayers)
         else:
+            #Pendiente
+            raise NotImplementedError
             hiddenLayers = ak.ConvBlock(kernel_size=7, separable=False, max_pooling=False, filters=64, num_blocks=1, num_layers=1)(input)
             hiddenLayers = ak.ConvBlock(kernel_size=7, separable=False, max_pooling=True, filters=256, num_blocks=1, num_layers=1)(hiddenLayers)
             hiddenLayers = ak.DenseBlock(use_batchnorm=False, num_layers=1, num_units=128)(hiddenLayers)
