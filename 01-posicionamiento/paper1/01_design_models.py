@@ -25,7 +25,7 @@ from lib.trainingcommon import load_data
 models = [
     # 'M1', #M1 no es necesario, ya está diseñado
     #'M2'
-    'M3', #Pendiente
+    #'M3',
     'M4', #Pendiente
     'M5', #Pendiente
     'M6', #Pendiente
