@@ -12,3 +12,5 @@ Value in checkpoint could not be found in the restored object: (root).optimizer.
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.10
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.11
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.12
+-- Resumen del modelo:
+None
