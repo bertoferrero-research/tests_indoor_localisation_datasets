@@ -83,7 +83,8 @@ for modelName in models:
     save_model(model, model_file)
 
     # Guardamos la imagen del diseño
-    tf.keras.utils.plot_model(model, to_file=design_image_file, show_layer_names=True, show_shapes=True)
+    #No podemos guardar el diseño en imagen en la maquina de entrenamiento porque no podemos instalar la libreria
+    #tf.keras.utils.plot_model(model, to_file=design_image_file, show_layer_names=True, show_shapes=True)
 
     # Imprimimos resultados
     with open(log_file, 'a') as f:
