@@ -20,7 +20,7 @@ from lib.filters.particlefilter import particle_filter
 #Configuración
 track_file_prefix = 'track_straight_01_all_sensors.mbd_window'#'track_1_rssi'#'track_straight_01_all_sensors.mbd_window_median'
 synthtetic_track = False#True#False
-model_collection = 'dense'
+model_collection = 'cnn'
 use_pos_z = False
 scale_y = True
 remove_not_full_rows = True
@@ -29,7 +29,7 @@ dim_y = 17.64103475472807
 
 #Configuración de los modelos a probar
 modelList = [
-    'M2-model2_propio',
+    'M5-cnn',
 ]
 
 #Configuración de las ventanas a predecir
@@ -64,8 +64,8 @@ for model_name in modelList:
         #print(input_data)
 
         #Si el modelo es cnn, tenemos que darle una forma especial
-        #if model == 'cnn':
-        #    input_data = input_data.values.reshape(input_data.shape[0], input_data.shape[1], 1)
+        if model_collection == 'cnn':
+            input_data = input_data.values.reshape(input_data.shape[0], input_data.shape[1], 1)
 
         #Cargamos el modelo
         model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
