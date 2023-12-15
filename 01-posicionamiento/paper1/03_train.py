@@ -63,7 +63,7 @@ for modelName in models:
     for dataset in datasets:
         dataset_path = root_dir+'preprocessed_inputs/paper1/dataset-fingerprint_'+dataset+'.csv'
 
-        print('---- Entrenando modelo '+modelName + ' ----')
+        print('---- Entrenando modelo '+modelName + ' - dataset '+dataset+' ----')
         # Definimos rutas
         model_dir = models_dir+modelName+'/'+dataset+'/'
         model_file = model_dir+model_filename
