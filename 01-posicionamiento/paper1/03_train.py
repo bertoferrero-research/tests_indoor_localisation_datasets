@@ -23,13 +23,13 @@ from lib.trainingcommon import load_data
 
 # Definimos el listado de modelos a diseñar
 models = [
-    'M1',
-    'M2',
-    'M3',
-    # 'M4', 
-    # 'M5', 
-    # 'M6', 
-    # 'M7',
+    #'M1',
+    #'M2',
+    #'M3',
+     'M4', 
+     'M5', 
+     'M6', 
+     'M7',
     # 'M8'
 ]
 
@@ -57,11 +57,12 @@ tmp_dirname = root_dir+'/tmp/autokeras_training/'
 # Configramos la semilla aleatoria
 set_random_seed_value(random_seed)
 
-for dataset in datasets:
-    dataset_path = root_dir+'preprocessed_inputs/paper1/dataset-fingerprint_'+dataset+'.csv'
+# Recorremos cada modelo
+for modelName in models:
+    #Recorremos cada dataset
+    for dataset in datasets:
+        dataset_path = root_dir+'preprocessed_inputs/paper1/dataset-fingerprint_'+dataset+'.csv'
 
-    # Recorremos cada modelo
-    for modelName in models:
         print('---- Entrenando modelo '+modelName + ' ----')
         # Definimos rutas
         model_dir = models_dir+modelName+'/'+dataset+'/'
