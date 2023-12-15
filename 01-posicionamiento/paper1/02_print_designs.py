@@ -6,7 +6,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = script_dir+'/../../'  # Referencia al directorio raiz del proyecto
 sys.path.insert(1, root_dir)
 from sklearn.model_selection import train_test_split
-from lib.models.trainers import M2Trainer, M3Trainer, M4Trainer, M5Trainer, M6Trainer, M7Trainer
 import autokeras as ak
 import random
 import math
@@ -23,14 +22,14 @@ from lib.trainingcommon import load_data
 
 # Definimos el listado de modelos a diseñar
 models = [
-    'M1',
-    'M2',
-    'M3',
+    #'M1',
+    #'M2',
+    #'M3',
     'M4', 
     'M5', 
     'M6', 
     'M7',
-    'M8'
+    #'M8'
 ]
 
 # Configuración general
@@ -54,7 +53,8 @@ for modelName in models:
         continue
 
     #Cargamos el modelo
-    model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+    model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS, compile=False)
+    model.compile()
 
     # Guardamos la imagen del diseño
     #No podemos guardar el diseño en imagen en la maquina de entrenamiento porque no podemos instalar la libreria
