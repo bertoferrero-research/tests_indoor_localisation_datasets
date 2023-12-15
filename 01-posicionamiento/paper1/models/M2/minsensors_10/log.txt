@@ -1,0 +1,24 @@
+Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+Detecting that an object or model or tf.train.Checkpoint is being deleted with unrestored values. See the following logs for the specific values in question. To silence these warnings, use `status.expect_partial()`. See https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint#restorefor details about the status object returned by the restore function.
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.1
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.2
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.3
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.4
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.5
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.6
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.7
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.8
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.9
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.10
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.11
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.12
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.13
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.14
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.15
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.16
+-- Resumen del modelo:
+None
+-- Entrenamiento final
+Test loss: 0.0048
+Val loss: 0.0048
+Val accuracy: 0.9453
