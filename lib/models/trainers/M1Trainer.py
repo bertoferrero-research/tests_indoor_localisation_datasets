@@ -2,6 +2,7 @@ from lib.models import M1
 from sklearn.model_selection import train_test_split
 from .BaseTrainer import BaseTrainer
 import tensorflow as tf
+import autokeras as ak
 
 class M1Trainer(BaseTrainer):
     @staticmethod
@@ -27,3 +28,18 @@ class M1Trainer(BaseTrainer):
         model = model.export_model()
 
         return model, score
+
+    @staticmethod
+    def prediction(dataset_path: str, model_file: str, scaler_file: str):
+        #Cargamos los datos de entrenamiento
+        input_data, output_data = M1.load_testing_data(dataset_path, scaler_file)
+
+        #Cargamos el modelo
+        model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+
+        #Predecimos
+        predictions = model.predict(input_data)
+
+        #Devolvemos las predicciones y los datos de salida esperados
+        return predictions, output_data
+
