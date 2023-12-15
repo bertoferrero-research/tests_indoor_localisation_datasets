@@ -806,7 +806,7 @@ def load_history(history_file: str):
             return pickle.load(file_pi)
     return None
 
-def set_random_seed_value(seed: int):
+def set_random_seed_value(seed: int = 42):
     '''
     Establece la semilla aleatoria de numpy y tensorflow
     Args:
