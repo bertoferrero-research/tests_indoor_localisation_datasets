@@ -32,9 +32,6 @@ class M8Trainer(BaseTrainer):
         outputlength_dim2 = y_dim2.shape[1]
         modelInstance = M8(inputlength, [outputlength_dim1, outputlength_dim2])
 
-        if designing == False:
-            raise NotImplementedError
-
         #Creamos la función hypermodelo para el entrenamiento
         def build_model(hp):
             #Definimos los hipermodelos y construimos el modelo en si
@@ -42,26 +39,46 @@ class M8Trainer(BaseTrainer):
             activation = 'softmax'
             inputdropout = hp.Float('input_dropout', min_value=0.0, max_value=0.5, step=0.1)
             dimension1 = []
-            for i in range(hp.Int('num_layers_dimension1', min_value=1, max_value=10, step=1)):
-                dimension1.append(
-                    {
-                        'units': hp.Int('units_dimension1_'+str(i), min_value=4, max_value=2048, step=2, sampling="log"), 
-                        'dropout': hp.Float('dropout_dimension1_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
-                    })
-
             dimension2 = []
-            for i in range(hp.Int('num_layers_dimension2', min_value=1, max_value=10, step=1)):
-                dimension2.append(
-                    {
-                        'units': hp.Int('units_dimension2_'+str(i), min_value=4, max_value=2048, step=2, sampling="log"),
-                        'dropout': hp.Float('dropout_dimension2_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
-                    }
-                )
+            if designing:
+                for i in range(hp.Int('num_layers_dimension1', min_value=1, max_value=10, step=1)):
+                    dimension1.append(
+                        {
+                            'units': hp.Int('units_dimension1_'+str(i), min_value=4, max_value=2048, step=2, sampling="log"), 
+                            'dropout': hp.Float('dropout_dimension1_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
+                        })
 
-            loss_weight_d1 = hp.Float('loss_weight_d1', min_value=0.1, max_value=0.9, step=0.1)
+                for i in range(hp.Int('num_layers_dimension2', min_value=1, max_value=10, step=1)):
+                    dimension2.append(
+                        {
+                            'units': hp.Int('units_dimension2_'+str(i), min_value=4, max_value=2048, step=2, sampling="log"),
+                            'dropout': hp.Float('dropout_dimension2_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
+                        }
+                    )
+                loss_weight_d1 = hp.Float('loss_weight_d1', min_value=0.1, max_value=0.9, step=0.1)
+                learning_rate = learning_rate=hp.Float('learning_rate', min_value=0.00001, max_value=0.1, step=10, sampling="log")
+
+            else:
+                d1units = [1024, 128, 2048, 1024, 16, 16, 1024, 4]
+                for i in range(len(d1units)):
+                    dimension1.append(
+                        {
+                            'units': d1units[i], 
+                            'dropout': hp.Float('dropout_dimension1_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
+                        })
+                
+                d2units = [128, 8, 8]
+                for i in range(len(d2units)):
+                    dimension2.append(
+                        {
+                            'units': d2units[i], 
+                            'dropout': hp.Float('dropout_dimension2_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
+                        })
+                loss_weight_d1 = 0.5
+                learning_rate = 0.01            
+
             loss_weight_d2 = 1 - loss_weight_d1
-            learning_rate = learning_rate=hp.Float('learning_rate', min_value=0.00001, max_value=0.1, step=10, sampling="log")
-
+            
             return modelInstance.build_custom_model(dimension1=dimension1, dimension2=dimension2, loss_weight_d1=loss_weight_d1, loss_weight_d2=loss_weight_d2, inputdropout=inputdropout, learning_rate=learning_rate, loss=loss, activation_d1=activation, activation_d2=activation)
             
 
