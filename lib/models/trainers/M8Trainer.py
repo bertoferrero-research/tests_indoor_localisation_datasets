@@ -5,6 +5,7 @@ import tensorflow as tf
 import numpy as np
 from lib.trainingcommon import posXYlist_to_grid
 import keras_tuner
+from lib.trainingcommon import descale_numpy
 
 class M8Trainer(BaseTrainer):
     @staticmethod
@@ -110,3 +111,26 @@ class M8Trainer(BaseTrainer):
         print(best_hps.values)
 
         return model, score
+
+    @staticmethod
+    def prediction(dataset_path: str, model_file: str, scaler_file: str):
+        cell_amount_x = 3
+        cell_amount_y = 3
+
+        #Cargamos los datos de entrenamiento
+        input_data, output_data = M8.load_testing_data(dataset_path, scaler_file)
+
+        #Cargamos el modelo
+        model = tf.keras.models.load_model(model_file)
+
+        #Predecimos
+        predictions = model.predict(input_data)
+        #Nos quedamos con la salida final
+        predictions = predictions[-1]
+        #Usamp argmax para quedarnos con la probabilidad más alta de cada posición
+        predictions = np.argmax(predictions, axis=-1)
+        # Convertimos a posiciones
+        predictions_positions = gridList_to_posXY(predictions, cell_amount_x=cell_amount_x**2, cell_amount_y=cell_amount_y**2)
+
+        #Devolvemos las predicciones y los datos de salida esperados
+        return predictions_positions, output_data
