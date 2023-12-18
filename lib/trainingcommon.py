@@ -289,6 +289,18 @@ def descale_pos_x(pos_x: pd.Series):
     scaler = get_scaler_pos_x()
     return scaler.inverse_transform(pos_x.values.reshape(-1, 1)).flatten()
 
+def descale_pos_x_np(pos_x: np.ndarray):
+    """
+    Descales the given position values using the scaler for pos_x.
+
+    Parameters:
+    pos_x (np.ndarray): The position values to be descaled.
+
+    Returns:
+    np.ndarray: The descaled position values.
+    """
+    scaler = get_scaler_pos_x()
+    return scaler.inverse_transform(pos_x.reshape(-1, 1)).flatten()
 
 def descale_pos_y(pos_y: pd.Series):
     """
@@ -301,6 +313,18 @@ def descale_pos_y(pos_y: pd.Series):
     scaler = get_scaler_pos_y()
     return scaler.inverse_transform(pos_y.values.reshape(-1, 1)).flatten()
 
+def descale_pos_y_np(pos_y: np.ndarray):
+    """
+    Descales the given position values using the scaler for pos_y.
+
+    Parameters:
+    pos_y (np.ndarray): The position values to be descaled.
+
+    Returns:
+    np.ndarray: The descaled position values.
+    """
+    scaler = get_scaler_pos_y()
+    return scaler.inverse_transform(pos_y.reshape(-1, 1)).flatten()
 
 def descale_dataframe(data: pd.DataFrame):
     """
@@ -314,6 +338,20 @@ def descale_dataframe(data: pd.DataFrame):
     data_scaled['pos_x'] = descale_pos_x(data['pos_x'])
     data_scaled['pos_y'] = descale_pos_y(data['pos_y'])
     return data_scaled
+
+def descale_numpy(data: np.ndarray):
+    """
+    Descales the input numpy array by applying descaling functions to the x and y coordinates.
+
+    Args:
+        data (np.ndarray): The input numpy array.
+
+    Returns:
+        np.ndarray: The descaled numpy array.
+    """
+    data[:, 0] = descale_pos_x_np(data[:, 0])
+    data[:, 1] = descale_pos_y_np(data[:, 1])
+    return data
 
 # endregion
 
