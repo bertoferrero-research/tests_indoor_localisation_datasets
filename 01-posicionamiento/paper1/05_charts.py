@@ -16,7 +16,8 @@ models = [
     # 'M5',
     # 'M6',
     # 'M7',
-    # 'M8'
+    # 'M8',
+    'T1'
 ]
 
 # Dataset a emplear
