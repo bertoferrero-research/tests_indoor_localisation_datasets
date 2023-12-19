@@ -133,4 +133,5 @@ class M8Trainer(BaseTrainer):
         predictions_positions = gridList_to_posXY(predictions, cell_amount_x=cell_amount_x**2, cell_amount_y=cell_amount_y**2)
 
         #Devolvemos las predicciones y los datos de salida esperados
+        output_data = output_data.to_numpy()
         return predictions_positions, output_data
