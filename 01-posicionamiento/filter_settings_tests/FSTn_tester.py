@@ -4,6 +4,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import math
 import os.path
+import numbers
 import pickle
 import autokeras as ak
 from sklearn.model_selection import train_test_split
@@ -13,7 +14,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__)) #Referencia al directori
 root_dir = script_dir+'/../../'                                                                        #Referencia al directorio raiz del proyecto
 sys.path.insert(1, root_dir)
 from lib.trainingcommon import set_random_seed_value, load_data, save_history, save_model, descale_pos_x, descale_pos_y
-from models.M1 import M1
+from lib.models import M1
 
 # Objetivos:
 # FST1: Nº mínimo de medidas por sensor obligatorias VS error de predicción y número de muestras
@@ -38,11 +39,11 @@ test_specific_settings = {
 		'test_values': ['max', 'min', 'mean', 'median', 'tss'],
 	},
 	'FST4': {
-		'chart_x_label': 'Max window size',
+		'chart_x_label': 'Max window size (s)',
 		'test_values': ["1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0"],
 	},
 	'FST5': {
-		'chart_x_label': 'Min window size',
+		'chart_x_label': 'Min window size (s)',
 		'test_values': ["0.25", "0.5", "0.75", "1.0", "1.25", "1.5", "1.75"],
 	},
 }
@@ -54,7 +55,7 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_name = 'FST5'
+test_name = 'FST4'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'
@@ -209,43 +210,43 @@ for test_value in test_values:
 general_results = pd.DataFrame(general_results)
 general_results.to_csv(general_results_file, index=False)
 
-#Imprimimos la gráfica
-# Primer eje con el error medio
-fig, ax1 = plt.subplots()
-ax1.set_xlabel(chart_x_label)
-ax1.set_ylabel('Mean error (m)', color='tab:blue')
-ax1.set_ylim([0, general_results['mean_euclidean'].max()+0.5])
-plot_1 = ax1.plot(general_results['test_value'], general_results['mean_euclidean'], label='Mean error (m)', color='tab:blue', marker='o')
-#ax1.tick_params(axis='y', labelcolor='tab:blue')
+# #Imprimimos la gráfica
+# # Primer eje con el error medio
+# fig, ax1 = plt.subplots()
+# ax1.set_xlabel(chart_x_label)
+# ax1.set_ylabel('Mean error (m)', color='tab:blue')
+# ax1.set_ylim([0, general_results['mean_euclidean'].max()+0.5])
+# plot_1 = ax1.plot(general_results['test_value'], general_results['mean_euclidean'], label='Mean error (m)', color='tab:blue', marker='o')
+# #ax1.tick_params(axis='y', labelcolor='tab:blue')
 
-# Segundo eje con la cantidad de muestras
-ax2 = ax1.twinx()
-ax2.set_ylabel('Samples amount', color='tab:red')
-ax2.set_ylim([0, general_results['test_samples_amount'].max()+1])
-plot_2 = ax2.plot(general_results['test_value'], general_results['test_samples_amount'], label='Samples amount', color='tab:red', marker='o')
-#ax2.tick_params(axis='y', labelcolor='tab:red')
+# # Segundo eje con la cantidad de muestras
+# ax2 = ax1.twinx()
+# ax2.set_ylabel('Samples amount', color='tab:red')
+# ax2.set_ylim([0, general_results['test_samples_amount'].max()+1])
+# plot_2 = ax2.plot(general_results['test_value'], general_results['test_samples_amount'], label='Samples amount', color='tab:red', marker='o')
+# #ax2.tick_params(axis='y', labelcolor='tab:red')
 
-# Tercer eje con la desviación estandar
-ax3 = ax1.twinx()
-ax3.set_yticklabels([])  # Ocultar los valores del eje y, pero mantener las líneas del eje
-ax3.yaxis.set_label_position('left')  # Colocar la etiqueta del eje y a la izquierda
-ax3.yaxis.set_label_coords(-0.1, 0)  # Colocamos la etiqueta del eje y a la izquierda
-ax3.set_ylabel('Standard deviation (m)', color='tab:green')
-ax3.set_ylim([0, general_results['mean_euclidean'].max()+0.5])
-plot_3 = ax3.plot(general_results['test_value'], general_results['standard_deviation_euclidean'], label='Standard deviation (m)', color='tab:green', marker='o')
-#ax3.tick_params(axis='y', labelcolor='tab:green')
+# # Tercer eje con la desviación estandar
+# ax3 = ax1.twinx()
+# ax3.set_yticklabels([])  # Ocultar los valores del eje y, pero mantener las líneas del eje
+# ax3.yaxis.set_label_position('left')  # Colocar la etiqueta del eje y a la izquierda
+# ax3.yaxis.set_label_coords(-0.1, 0)  # Colocamos la etiqueta del eje y a la izquierda
+# ax3.set_ylabel('Standard deviation (m)', color='tab:green')
+# ax3.set_ylim([0, general_results['mean_euclidean'].max()+0.5])
+# plot_3 = ax3.plot(general_results['test_value'], general_results['standard_deviation_euclidean'], label='Standard deviation (m)', color='tab:green', marker='o')
+# #ax3.tick_params(axis='y', labelcolor='tab:green')
 
-# Leyenda
-# plots = plot_1 + plot_2 + plot_3
-# labels = [l.get_label() for l in plots]
-# ax1.legend(plots, labels, loc='lower left')
+# # Leyenda
+# # plots = plot_1 + plot_2 + plot_3
+# # labels = [l.get_label() for l in plots]
+# # ax1.legend(plots, labels, loc='lower left')
 
-plt.xticks(general_results['test_value'])
-#plt.gca().set_aspect('equal', adjustable='datalim') # Para que los ejes tengan la misma escala
-plt.grid(True, which='both', linestyle='-', linewidth=0.5)
-plt.minorticks_on()
-plt.grid(which='minor', linestyle=':', linewidth='0.5', color='gray')
-plt.savefig(general_figure_file)
+# plt.xticks(general_results['test_value'])
+# #plt.gca().set_aspect('equal', adjustable='datalim') # Para que los ejes tengan la misma escala
+# plt.grid(True, which='both', linestyle='-', linewidth=0.5)
+# plt.minorticks_on()
+# plt.grid(which='minor', linestyle=':', linewidth='0.5', color='gray')
+# plt.savefig(general_figure_file)
 
 
 ##Imprimimos la gráfica de cajas
@@ -258,27 +259,37 @@ ax1.set_ylim([0, 12])
 # Calculate the positions for the boxplots
 positions = general_results['test_value']
 #si positions no es numérico, tenemos que aplicar unas posiciones generadas
-if not isinstance(positions[0], (int, float)):	
+if not isinstance(positions[0], numbers.Number):	
 	positions = np.arange(len(general_results['test_value']))
 plot_1 = ax1.boxplot(deviations, positions=positions, showfliers=True, widths=0.2)
 ax1.set_xticklabels(general_results['test_value'])
 
 # Segundo eje con la cantidad de muestras
 ax2 = ax1.twinx()
-ax2.set_ylabel('Samples amount', color='tab:red')
+#ax2.set_ylabel('Samples amount', color='tab:red')
 ax2.set_ylim([0, 70])
 plot_2 = ax2.plot(general_results['test_value'], general_results['test_samples_amount'], label='Samples amount', color='tab:red', marker='o')
-ax2.tick_params(axis='y', labelcolor='tab:red')
-ax2.set_xticklabels(general_results['test_value'])
+#ax2.tick_params(axis='y', labelcolor='tab:red')
+#ax2.set_xticklabels(general_results['test_value'])
+ax2.set_yticklabels([]) #Ocultar valores en el eje
+ax2.yaxis.grid(False)
+
+# Iterar sobre las posiciones y los números de muestras
+for pos, num_samples in zip(positions, general_results['test_samples_amount']):
+    # Usar annotate para agregar una anotación en la posición correspondiente
+    ax1.annotate(str(num_samples), (pos, 1), xytext=(0, 250), 
+                 textcoords='offset points', ha='center', va='bottom', color='tab:red')
+ax1.annotate("Samples amount", (0.5, 1), xytext=(0, -20), xycoords='figure fraction', textcoords='offset points', ha='center', va='bottom', color='tab:red')
+
 
 # Tercer eje con la frecuencia de muestras
 ax3 = ax1.twinx()
-ax3.set_yticklabels([])  # Ocultar los valores del eje y, pero mantener las líneas del eje
-ax3.yaxis.set_label_position('left')  # Colocar la etiqueta del eje y a la izquierda
-ax3.yaxis.set_label_coords(-0.1, 0)  # Colocamos la etiqueta del eje y a la izquierda
-ax3.set_ylabel('Time difference between samples (s)', color='tab:blue')
-ax3.set_ylim([0, 12])
-plot_3 = ax3.plot(general_results['test_value'], general_results['mean_time_diff'], label='Time difference between samples (s)', color='tab:blue', marker='o')
+ax3.set_xticks(positions)
+ax3.set_ylabel('Time between samples (s)', color='tab:blue')
+ax3.set_ylim([0, 3])
+plot_3 = ax3.plot(general_results['test_value'], general_results['mean_time_diff'], label='Time between samples (s)', color='tab:blue', marker='o')
+ax3.tick_params(axis='y', labelcolor='tab:blue')
+ax3.set_xticklabels(general_results['test_value'])
 
 plt.xticks(general_results['test_value'])
 plt.grid(True)
