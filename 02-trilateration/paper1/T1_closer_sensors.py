@@ -20,21 +20,19 @@ from lib.trainingcommon import set_random_seed_value
 
 # Configuración
 script_name = 'T1_closer_sensors'
-track_file_prefix = 'track_straight_01_all_sensors.mbd_window'
+track_file_prefix = 'dataset-track_minsensors'
 distance_optimize_config_file_name = 'settings_optimize_constants_1.json'
 distance_optimize_config_file = script_dir+distance_optimize_config_file_name
 config_file = root_dir+'dataset/cnf/tetam.dev'
 number_of_nodes = 4
+min_number_of_nodes = 3
 dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 random_seed = 42
 
 windowsettingslist = [
-  '1_4_100_median',
-  '3_4_100_median',
-  '1_12_100_median',
-  '3_12_100_median',
-  '3_12_100_tss'
+  '10',
+  '12'
 ]
 
 # Cargamos la semilla de los generadores aleatorios
@@ -74,7 +72,7 @@ for windowsettings_suffix in windowsettingslist:
         # Obtenemos los x mejores dongles (los que tienen menor rssi)
         three_best_dongles = three_best_dongles.sort_values(ascending=False).head(number_of_nodes).index.tolist()
         
-        if len(three_best_dongles) < number_of_nodes:
+        if len(three_best_dongles) < min_number_of_nodes:
             print("No hay suficientes nodos")
             continue
 
@@ -161,9 +159,9 @@ for windowsettings_suffix in windowsettingslist:
 
 
     # Mostramos el grafico
-    plt.plot([0, 0, dim_y, dim_y, 0], [0, dim_x,  dim_x, 0, 0], 'go-', label='Real', linewidth=1)
-    plt.plot(output_data['real_y'].values, output_data['real_x'].values, 'ro-', label='Real', linewidth=1)
-    plt.plot(output_data['predicted_y'].values, output_data['predicted_x'].values, 'mo-', label='Calculada', linewidth=1)
+    plt.plot([0, 0, dim_x, dim_x, 0], [0, dim_y,  dim_y, 0, 0], 'go-', label='Real', linewidth=1)
+    plt.plot(output_data['real_x'].values, output_data['real_y'].values, 'ro-', label='Real', linewidth=1)
+    plt.plot(output_data['predicted_x'].values, output_data['predicted_y'].values, 'mo-', label='Calculada', linewidth=1)
     plt.savefig(figure_file)
     plt.close()
 
