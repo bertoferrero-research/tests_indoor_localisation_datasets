@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from .BaseTrainer import BaseTrainer
 import tensorflow as tf
 import numpy as np
-from lib.trainingcommon import posXYlist_to_grid
+from lib.trainingcommon import posXYlist_to_grid, gridList_to_posXY
 import autokeras as ak
 from lib.trainingcommon import descale_numpy
 
@@ -58,4 +58,5 @@ class M7Trainer(BaseTrainer):
             predictions, cell_amount_x, cell_amount_y)
 
         #Devolvemos las predicciones y los datos de salida esperados
+        output_data = output_data.to_numpy()
         return predictions_positions, output_data

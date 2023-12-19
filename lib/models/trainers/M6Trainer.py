@@ -58,4 +58,5 @@ class M6Trainer(BaseTrainer):
             predictions, cell_amount_x, cell_amount_y)
 
         #Devolvemos las predicciones y los datos de salida esperados
+        output_data = output_data.to_numpy()
         return predictions_positions, output_data

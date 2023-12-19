@@ -9,11 +9,11 @@ from .ModelsBaseClass import ModelsBaseClass
 class M8(ModelsBaseClass):
     @staticmethod
     def load_traning_data(data_file: str, scaler_file: str):
-        return load_data(data_file, scaler_file, train_scaler_file=True, include_pos_z=False, scale_y=True)
+        return load_data(data_file, scaler_file, train_scaler_file=True, include_pos_z=False, scale_y=False)
 
     @staticmethod
     def load_testing_data(data_file: str, scaler_file: str):
-        return load_data(data_file, scaler_file, train_scaler_file=False, include_pos_z=False, scale_y=True)
+        return load_data(data_file, scaler_file, train_scaler_file=False, include_pos_z=False, scale_y=False)
 
     def build_model(self):
         pass
