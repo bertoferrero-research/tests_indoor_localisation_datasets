@@ -1,4 +1,5 @@
 from lib.models import M1
+from lib.trainingcommon import descale_numpy
 from sklearn.model_selection import train_test_split
 from .BaseTrainer import BaseTrainer
 import tensorflow as tf
@@ -39,6 +40,11 @@ class M1Trainer(BaseTrainer):
 
         #Predecimos
         predictions = model.predict(input_data)
+
+        #Los datos de predicción y salida vienen escalados, debemos desescalarlos
+        output_data = output_data.to_numpy()
+        output_data = descale_numpy(output_data)
+        predictions = descale_numpy(predictions)
 
         #Devolvemos las predicciones y los datos de salida esperados
         return predictions, output_data

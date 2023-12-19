@@ -3,6 +3,8 @@ from sklearn.model_selection import train_test_split
 from .BaseTrainer import BaseTrainer
 import tensorflow as tf
 import numpy as np
+import autokeras as ak
+from lib.trainingcommon import descale_numpy
 
 class M3Trainer(BaseTrainer):
     @staticmethod
@@ -39,3 +41,22 @@ class M3Trainer(BaseTrainer):
         model = model.export_model()
 
         return model, score
+
+    @staticmethod
+    def prediction(dataset_path: str, model_file: str, scaler_file: str):
+        #Cargamos los datos de entrenamiento
+        input_data, output_data, input_map_data = M3.load_testing_data(dataset_path, scaler_file)
+
+        #Cargamos el modelo
+        model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+
+        #Predecimos
+        predictions = model.predict([input_data, input_map_data])
+
+        #Los datos de predicción y salida vienen escalados, debemos desescalarlos
+        output_data = output_data.to_numpy()
+        output_data = descale_numpy(output_data)
+        predictions = descale_numpy(predictions)
+
+        #Devolvemos las predicciones y los datos de salida esperados
+        return predictions, output_data

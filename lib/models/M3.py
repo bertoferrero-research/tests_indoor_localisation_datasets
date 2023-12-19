@@ -13,7 +13,7 @@ class M3(ModelsBaseClass):
 
     @staticmethod
     def load_testing_data(data_file: str, scaler_file: str):
-        return load_data(data_file, scaler_file, include_pos_z=use_pos_z, scale_y=scale_y, not_valid_sensor_value=100, return_valid_sensors_map=True)
+        return load_data(data_file, scaler_file, include_pos_z=False, scale_y=True, not_valid_sensor_value=100, return_valid_sensors_map=True)
 
     def build_model(self):
         pass

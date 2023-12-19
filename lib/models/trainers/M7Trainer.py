@@ -4,6 +4,8 @@ from .BaseTrainer import BaseTrainer
 import tensorflow as tf
 import numpy as np
 from lib.trainingcommon import posXYlist_to_grid
+import autokeras as ak
+from lib.trainingcommon import descale_numpy
 
 class M7Trainer(BaseTrainer):
     @staticmethod
@@ -36,3 +38,24 @@ class M7Trainer(BaseTrainer):
         model = model.export_model()
 
         return model, score
+
+    @staticmethod
+    def prediction(dataset_path: str, model_file: str, scaler_file: str):
+        cell_amount_x = 7
+        cell_amount_y = 6
+
+        #Cargamos los datos de entrenamiento
+        input_data, output_data = M7.load_testing_data(dataset_path, scaler_file)
+
+        #Cargamos el modelo
+        model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+
+        #Predecimos
+        predictions = model.predict(input_data)
+        predictions = np.argmax(predictions, axis=-1)
+        # Convertimos a posiciones
+        predictions_positions = gridList_to_posXY(
+            predictions, cell_amount_x, cell_amount_y)
+
+        #Devolvemos las predicciones y los datos de salida esperados
+        return predictions_positions, output_data
