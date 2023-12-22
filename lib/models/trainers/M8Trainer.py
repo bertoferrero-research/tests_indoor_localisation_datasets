@@ -61,7 +61,7 @@ class M8Trainer(BaseTrainer):
                 learning_rate = learning_rate=hp.Float('learning_rate', min_value=0.00001, max_value=0.1, step=10, sampling="log")
 
             else:
-                d1units = [1024, 128, 2048, 1024, 16, 16, 1024, 4]
+                d1units = [512, 512, 512, 64, 256, 2048, 128, 256]
                 for i in range(len(d1units)):
                     dimension1.append(
                         {
@@ -69,15 +69,15 @@ class M8Trainer(BaseTrainer):
                             'dropout': hp.Float('dropout_dimension1_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
                         })
                 
-                d2units = [128, 8, 8]
+                d2units = [32, 128, 128, 64]
                 for i in range(len(d2units)):
                     dimension2.append(
                         {
                             'units': d2units[i], 
                             'dropout': hp.Float('dropout_dimension2_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
                         })
-                loss_weight_d1 = 0.5
-                learning_rate = 0.01            
+                loss_weight_d1 = 0.2
+                learning_rate = 0.0001            
 
             loss_weight_d2 = 1 - loss_weight_d1
             
