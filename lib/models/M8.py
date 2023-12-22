@@ -67,7 +67,7 @@ class M8(ModelsBaseClass):
 
         # Creamos el output de la dimension 2
         output_d2 = tf.keras.layers.Dense(
-            self.outputlength[1], activation=activation_d2)(hiddenLayers)
+            self.outputlength[1], activation=activation_d2, name='output_d2')(hiddenLayers)
 
         # Creamos el modelo
         model = tf.keras.Model(

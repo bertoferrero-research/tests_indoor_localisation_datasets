@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from .BaseTrainer import BaseTrainer
 import tensorflow as tf
 import numpy as np
-from lib.trainingcommon import posXYlist_to_grid
+from lib.trainingcommon import posXYlist_to_grid, gridList_to_posXY
 import keras_tuner
 from lib.trainingcommon import descale_numpy
 
@@ -88,7 +88,7 @@ class M8Trainer(BaseTrainer):
         X_train, X_test, y_dim1_train, y_dim1_test, y_dim2_train, y_dim2_test = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
         tuner = keras_tuner.BayesianOptimization(
             build_model,
-            objective="val_loss",
+            objective=[keras_tuner.Objective("val_output_d2_accuracy", direction="max"), keras_tuner.Objective("val_output_d1_accuracy", direction="max"), keras_tuner.Objective("val_loss", direction="min")],
             max_trials=max_trials,
             overwrite=overwrite,
             directory=tmp_dir,
