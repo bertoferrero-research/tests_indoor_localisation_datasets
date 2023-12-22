@@ -23,14 +23,14 @@ from lib.trainingcommon import load_data
 
 # Definimos el listado de modelos a diseñar
 models = [
-    'M1',
-    'M2',
-    'M3',
-    'M4', 
-    'M5', 
+    # 'M1',
+    # 'M2',
+    # 'M3',
+    # 'M4', 
+    # 'M5', 
     # 'M6', 
     # 'M7',
-    # 'M8'
+    'M8'
 ]
 
 # Dataset a emplear
