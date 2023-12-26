@@ -1,9 +1,9 @@
 -- Resumen del modelo:
 None
 -- Entrenamiento final
-Test loss: 3.2952
-Val loss: 2.1973
-Val accuracy: 4.3931
+Test loss: 0.1074
+Val loss: 0.3477
+Val accuracy: 0.0473
 Detecting that an object or model or tf.train.Checkpoint is being deleted with unrestored values. See the following logs for the specific values in question. To silence these warnings, use `status.expect_partial()`. See https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint#restorefor details about the status object returned by the restore function.
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.1
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.2
@@ -57,6 +57,10 @@ Value in checkpoint could not be found in the restored object: (root).optimizer.
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.50
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.51
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.52
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.53
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.54
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.55
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.56
 Detecting that an object or model or tf.train.Checkpoint is being deleted with unrestored values. See the following logs for the specific values in question. To silence these warnings, use `status.expect_partial()`. See https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint#restorefor details about the status object returned by the restore function.
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.1
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.2
@@ -110,3 +114,7 @@ Value in checkpoint could not be found in the restored object: (root).optimizer.
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.50
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.51
 Value in checkpoint could not be found in the restored object: (root).optimizer._variables.52
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.53
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.54
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.55
+Value in checkpoint could not be found in the restored object: (root).optimizer._variables.56
