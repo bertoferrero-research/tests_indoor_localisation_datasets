@@ -88,6 +88,7 @@ class M8Trainer(BaseTrainer):
         callback1 = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
         callback2 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d2_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
         callback3 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d1_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
+        callbackTensor = tf.keras.callbacks.TensorBoard(tmp_dir+"/"+modelName+"/tensorboard_logs")
         X_train, X_test, y_dim1_train, y_dim1_test, y_dim2_train, y_dim2_test = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
         keras_tuner.GridSearch
         tuner = keras_tuner.BayesianOptimization(
@@ -100,10 +101,10 @@ class M8Trainer(BaseTrainer):
             seed=random_seed
         )
 
-        tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=1000, validation_data=(X_test, [y_dim1_test, y_dim2_test]), 
+        tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=2, validation_data=(X_test, [y_dim1_test, y_dim2_test]), 
                         verbose=2,
                         batch_size=batch_size,
-                        callbacks=[callback1, callback2, callback3])
+                        callbacks=[callback1, callback2, callback3, callbackTensor])
 
         # Devolvemos el modelo entrenado
         model = tuner.get_best_models()[0]
