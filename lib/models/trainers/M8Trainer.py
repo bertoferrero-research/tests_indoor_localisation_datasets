@@ -101,7 +101,7 @@ class M8Trainer(BaseTrainer):
             seed=random_seed
         )
 
-        tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=2, validation_data=(X_test, [y_dim1_test, y_dim2_test]), 
+        tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=1000, validation_data=(X_test, [y_dim1_test, y_dim2_test]), 
                         verbose=2,
                         batch_size=batch_size,
                         callbacks=[callback1, callback2, callback3, callbackTensor])
