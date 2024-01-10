@@ -55,7 +55,7 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_name = 'FST4'
+test_name = 'FST5'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'
@@ -68,7 +68,7 @@ history_filename = output_dir_models+'-test_variable--history.pkl'
 #Salida de los datos de test
 test_output_file = output_dir+'/predictions/'+test_name+'_predictions_-test_variable-.csv'
 general_figure_file = output_dir+'results.png'
-general_boxfigure_file = output_dir+'results_box.png'
+general_boxfigure_file = output_dir+'results_box.pdf'
 general_samples_frecuency_file = output_dir+'samples_frecuency.png'
 general_results_file = output_dir+'results_data.csv'
 
