@@ -24,12 +24,12 @@ models = [
 datasets = [
     {
         'name': 'minsensors_10',
-        'public_name': 'Dataset 1',
+        'public_name': 'Empty Values Dataset',
         'values': {}
     },
     {
         'name': 'minsensors_12',
-        'public_name': 'Dataset 2',
+        'public_name': 'Non-empty Values Dataset',
         'values': {}
     }
 ]
@@ -63,12 +63,13 @@ for dataset in datasets:
 # Recorremos cada dataset una vez mas para ya plasmar los resultados
 for dataset in datasets:
     fig, ax = plt.subplots()
-    ax.boxplot(dataset['values'].values())
+    ax.boxplot(dataset['values'].values(), meanline=True, showmeans=True, notch=True, showfliers=True)
     ax.set_xticklabels(dataset['values'].keys())
     ax.yaxis.grid(True)  # Agregar líneas de guía horizontales
-    ax.set_ylim([0, max_dataset_value+1])
+    ax.set_ylim([0, max_dataset_value+2.5])
     plt.xlabel('Models')
-    plt.ylabel('m')
+    plt.ylabel('Euclidian error (m)')
     plt.title(dataset['public_name'] +
-              ' - Average deviation on euclidian distance')
+              ' - Positioning error distribution')
     plt.savefig(os.path.join(output_dir, dataset['name']+'-boxplot.png'))
+    plt.savefig(os.path.join(output_dir, dataset['name']+'-boxplot.eps'))
