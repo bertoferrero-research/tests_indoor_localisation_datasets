@@ -68,7 +68,7 @@ history_filename = output_dir_models+'-test_variable--history.pkl'
 #Salida de los datos de test
 test_output_file = output_dir+'/predictions/'+test_name+'_predictions_-test_variable-.csv'
 general_figure_file = output_dir+'results.png'
-general_boxfigure_file = output_dir+'results_box.pdf'
+general_boxfigure_file = output_dir+test_name+'_result.eps'
 general_samples_frecuency_file = output_dir+'samples_frecuency.png'
 general_results_file = output_dir+'results_data.csv'
 
@@ -261,7 +261,7 @@ positions = general_results['test_value']
 #si positions no es numérico, tenemos que aplicar unas posiciones generadas
 if not isinstance(positions[0], numbers.Number):	
 	positions = np.arange(len(general_results['test_value']))
-plot_1 = ax1.boxplot(deviations, positions=positions, showfliers=True, widths=0.2)
+plot_1 = ax1.boxplot(deviations, positions=positions, showfliers=True, widths=0.2, showmeans=True, meanline=True, notch=True)
 ax1.set_xticklabels(general_results['test_value'])
 
 # Segundo eje con la cantidad de muestras
