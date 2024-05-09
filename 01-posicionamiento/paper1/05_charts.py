@@ -9,6 +9,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Definimos el listado de modelos a diseñar
 models = [
+    'T1',
     'M1',
     'M2',
     'M3',
@@ -16,9 +17,12 @@ models = [
     'M5',
     'M6',
     'M7',
-    'M8',
-    'T1'
+    'M8'
 ]
+
+# Definimos el valor del paper baseline para comparar
+baselineMean = 3.064
+baselineMedian = 2.223
 
 # Dataset a emplear
 datasets = [
@@ -63,13 +67,19 @@ for dataset in datasets:
 # Recorremos cada dataset una vez mas para ya plasmar los resultados
 for dataset in datasets:
     fig, ax = plt.subplots()
+    # Baseline
+    plt.axhline(y=baselineMean, color='#006400', linestyle='-.', label='Baseline Mean', linewidth=0.7)
+    plt.axhline(y=baselineMedian, color='darkorange', linestyle='-.', label='Baseline Median', linewidth=0.7)
+
+    # Recorremos cada modelo y plasmamos los resultados
     ax.boxplot(dataset['values'].values(), meanline=True, showmeans=True, notch=True, showfliers=True)
     ax.set_xticklabels(dataset['values'].keys())
     ax.yaxis.grid(True)  # Agregar líneas de guía horizontales
     ax.set_ylim([0, max_dataset_value+2.5])
     plt.xlabel('Models')
-    plt.ylabel('Euclidian error (m)')
+    plt.ylabel('Euclidian distance error (m)')
     plt.title(dataset['public_name'] +
               ' - Positioning error distribution')
+    
     plt.savefig(os.path.join(output_dir, dataset['name']+'-boxplot.png'))
     plt.savefig(os.path.join(output_dir, dataset['name']+'-boxplot.eps'))
