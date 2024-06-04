@@ -68,8 +68,8 @@ for dataset in datasets:
 for dataset in datasets:
     fig, ax = plt.subplots()
     # Baseline
-    plt.axhline(y=baselineMean, color='#006400', linestyle='-.', label='Baseline Mean', linewidth=0.7)
-    plt.axhline(y=baselineMedian, color='darkorange', linestyle='-.', label='Baseline Median', linewidth=0.7)
+    plt.axhline(y=baselineMean, color='red', linestyle='-.', label='Baseline Mean', linewidth=1.5)
+    plt.axhline(y=baselineMedian, color='blue', linestyle='-.', label='Baseline Median', linewidth=1.5)
 
     # Recorremos cada modelo y plasmamos los resultados
     ax.boxplot(dataset['values'].values(), meanline=True, showmeans=True, notch=True, showfliers=True)

@@ -39,11 +39,11 @@ test_specific_settings = {
 		'test_values': ['max', 'min', 'mean', 'median', 'tss'],
 	},
 	'FST4': {
-		'chart_x_label': 'Max window size (s)',
+		'chart_x_label': 'Max window size (sec.)',
 		'test_values': ["1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0"],
 	},
 	'FST5': {
-		'chart_x_label': 'Min window size (s)',
+		'chart_x_label': 'Min window size (sec.)',
 		'test_values': ["0.25", "0.5", "0.75", "1.0", "1.25", "1.5", "1.75"],
 	},
 }
@@ -55,7 +55,7 @@ dim_x = 20.660138018121128
 dim_y = 17.64103475472807
 
 #Configuración de la prueba
-test_name = 'FST5'
+test_name = 'FST1'
 output_dir = script_dir+'/output/'+test_name+'/'
 output_dir_models = output_dir+'models/'
 input_data_dir = root_dir+'preprocessed_inputs/paper1/'
@@ -253,7 +253,7 @@ general_results.to_csv(general_results_file, index=False)
 # Primer eje con el error medio
 fig, ax1 = plt.subplots()
 ax1.set_xlabel(chart_x_label)
-ax1.set_ylabel('Error (m)')
+ax1.set_ylabel('Euclidian distance error (m)')
 ax1.set_ylim([0, 12])
 
 # Calculate the positions for the boxplots
@@ -285,9 +285,9 @@ ax1.annotate("Samples amount", (0.5, 1), xytext=(0, -20), xycoords='figure fract
 # Tercer eje con la frecuencia de muestras
 ax3 = ax1.twinx()
 ax3.set_xticks(positions)
-ax3.set_ylabel('Time between samples (s)', color='tab:blue')
+ax3.set_ylabel('Time between samples (sec.)', color='tab:blue')
 ax3.set_ylim([0, 3])
-plot_3 = ax3.plot(general_results['test_value'], general_results['mean_time_diff'], label='Time between samples (s)', color='tab:blue', marker='o')
+plot_3 = ax3.plot(general_results['test_value'], general_results['mean_time_diff'], label='Time between samples (sec.)', color='tab:blue', marker='o')
 ax3.tick_params(axis='y', labelcolor='tab:blue')
 ax3.set_xticklabels(general_results['test_value'])
 
@@ -299,7 +299,7 @@ plt.savefig(general_boxfigure_file)
 # ##Tercer gráfico con la frecuencia de muestras
 # fig, ax1 = plt.subplots()
 # ax1.set_xlabel(chart_x_label)
-# ax1.set_ylabel('Time difference between samples (s)')
+# ax1.set_ylabel('Time difference between samples (sec.)')
 # ax1.set_ylim([0, 6])
 
 # # Calculate the positions for the boxplots
