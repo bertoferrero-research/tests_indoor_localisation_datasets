@@ -28,14 +28,14 @@ class M4Trainer(BaseTrainer):
         model = modelInstance.build_model_autokeras(designing=designing, overwrite=overwrite, tuner=tuner, random_seed=random_seed, autokeras_project_name=modelName, auokeras_folder=tmp_dir, max_trials=max_trials)
 
         # Entrenamos
-        X_train, X_test, y_train, y_test, Xmap_train, Xmap_test = train_test_split(
+        X_train, X_val, y_train, y_val, Xmap_train, Xmap_val = train_test_split(
             X, y, Xmap, test_size=0.2)
         callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=10, restore_best_weights=True)
-        history = model.fit([X_train, Xmap_train], y_train, validation_data=([X_test, Xmap_test], y_test),
+        history = model.fit([X_train, Xmap_train], y_train, validation_data=([X_val, Xmap_val], y_val),
                             verbose=(1 if designing else 2), callbacks=[callback], batch_size=batch_size)
 
         # Evaluamos usando el test set
-        score = model.evaluate([X_test, Xmap_test], y_test, verbose=0)
+        score = model.evaluate([X_val, Xmap_val], y_val, verbose=0)
 
         # Devolvemos el modelo entrenado
         model = model.export_model()
@@ -46,17 +46,26 @@ class M4Trainer(BaseTrainer):
     def prediction(dataset_path: str, model_file: str, scaler_file: str):
         #Cargamos los datos de entrenamiento
         input_data, output_data, input_map_data = M4.load_testing_data(dataset_path, scaler_file)
+        output_data = output_data.to_numpy()
 
         #Cargamos el modelo
         model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+        
+        #Evaluamos
+        metrics = model.evaluate([input_data, input_map_data], output_data, verbose=0)
 
         #Predecimos
         predictions = model.predict([input_data, input_map_data])
 
         #Los datos de predicción y salida vienen escalados, debemos desescalarlos
-        output_data = output_data.to_numpy()
         output_data = descale_numpy(output_data)
         predictions = descale_numpy(predictions)
 
+        #Formateamos las métricas
+        formated_metrics = {
+            'loss_mse': metrics[1],
+            'accuracy': metrics[2]
+        }
+
         #Devolvemos las predicciones y los datos de salida esperados
-        return predictions, output_data
+        return predictions, output_data, formated_metrics

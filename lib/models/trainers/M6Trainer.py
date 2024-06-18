@@ -1,3 +1,4 @@
+from sklearn.metrics import accuracy_score
 from lib.models import M6
 from sklearn.model_selection import train_test_split
 from .BaseTrainer import BaseTrainer
@@ -46,6 +47,7 @@ class M6Trainer(BaseTrainer):
 
         #Cargamos los datos de entrenamiento
         input_data, output_data = M6.load_testing_data(dataset_path, scaler_file)
+        output_data = output_data.to_numpy()
 
         #Cargamos el modelo
         model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
@@ -56,7 +58,14 @@ class M6Trainer(BaseTrainer):
         # Convertimos a posiciones
         predictions_positions = gridList_to_posXY(
             predictions, cell_amount_x, cell_amount_y)
+        
+        # Evaluación
+        accuracy = accuracy_score(output_data, predictions_positions)
+        metrics = model.evaluate(input_data, output_data, verbose=0)
+        formated_metrics = {
+            'loss_mse': metrics[1],
+            'accuracy': accuracy
+        }
 
         #Devolvemos las predicciones y los datos de salida esperados
-        output_data = output_data.to_numpy()
-        return predictions_positions, output_data
+        return predictions_positions, output_data, formated_metrics

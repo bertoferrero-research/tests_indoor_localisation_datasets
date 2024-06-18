@@ -34,17 +34,26 @@ class M2Trainer(BaseTrainer):
     def prediction(dataset_path: str, model_file: str, scaler_file: str):
         #Cargamos los datos de entrenamiento
         input_data, output_data = M2.load_testing_data(dataset_path, scaler_file)
+        output_data = output_data.to_numpy()
 
         #Cargamos el modelo
         model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+
+        #Evaluamos
+        metrics = model.evaluate(input_data, output_data, verbose=0)
 
         #Predecimos
         predictions = model.predict(input_data)
 
         #Los datos de predicción y salida vienen escalados, debemos desescalarlos
-        output_data = output_data.to_numpy()
         output_data = descale_numpy(output_data)
         predictions = descale_numpy(predictions)
 
+        #Formateamos las métricas
+        formated_metrics = {
+            'loss_mse': metrics[1],
+            'accuracy': metrics[2]
+        }
+
         #Devolvemos las predicciones y los datos de salida esperados
-        return predictions, output_data
+        return predictions, output_data, formated_metrics
