@@ -24,13 +24,13 @@ from lib.trainingcommon import load_data
 # Definimos el listado de modelos a diseñar
 models = [
     'M1',
-    'M2',
-    'M3',
-    'M4', 
-    'M5', 
-    'M6', 
-    'M7',
-    'M8'
+    # 'M2',
+    # 'M3',
+    # 'M4', 
+    # 'M5', 
+    # 'M6', 
+    # 'M7',
+    # 'M8'
 ]
 
 # Dataset a emplear
@@ -85,7 +85,7 @@ for modelName in models:
         trainerClass = globals()[modelName+'Trainer']
 
         # Obtenemos la predicción
-        predictions, output_data = trainerClass.prediction(dataset_path, model_file, scaler_file)
+        predictions, output_data, prediction_metrics = trainerClass.prediction(dataset_path, model_file, scaler_file)
 
         #Generamos los calculos y ficheros de salida
         output_list = []
@@ -165,7 +165,7 @@ for modelName in models:
             'q25_euclidean': output_data['eclidean_distance'].quantile(0.25),
             'q50_euclidean': output_data['eclidean_distance'].quantile(0.50),
             'q75_euclidean': output_data['eclidean_distance'].quantile(0.75),
-        })
+        } | prediction_metrics)
         model_deviation_data.append({
             'dataset': dataset,
             'min_x': output_data['deviation_x'].min(),
@@ -186,7 +186,7 @@ for modelName in models:
             'q25_euclidean': output_data['eclidean_distance'].quantile(0.25),
             'q50_euclidean': output_data['eclidean_distance'].quantile(0.50),
             'q75_euclidean': output_data['eclidean_distance'].quantile(0.75),
-        })
+        } | prediction_metrics)
 
     #Imprimimos los datos de desviación para el fichero de desviaciones global
     model_deviation_data = pd.DataFrame(model_deviation_data)
