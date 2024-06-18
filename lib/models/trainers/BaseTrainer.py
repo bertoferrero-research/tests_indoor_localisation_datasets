@@ -15,10 +15,10 @@ class BaseTrainer(ABC):
     @staticmethod
     def fit_autokeras(model, X, y, designing, batch_size, callbacks = None, test_size:float=0.2):
         #Particionamos
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
         #Entrenamos
-        model.fit(X_train, y_train, validation_data=(X_test, y_test), 
+        model.fit(X_train, y_train, validation_data=(X_val, y_val), 
                             verbose=(1 if designing else 2), callbacks=callbacks, batch_size=batch_size)
         #Evaluamos
-        score = model.evaluate(X_test, y_test, verbose=0)
+        score = model.evaluate(X_val, y_val, verbose=0)
         return model, score
