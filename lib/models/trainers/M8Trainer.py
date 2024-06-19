@@ -1,4 +1,5 @@
 from lib.models import M8
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from .BaseTrainer import BaseTrainer
 import tensorflow as tf
@@ -89,7 +90,7 @@ class M8Trainer(BaseTrainer):
         callback2 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d2_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
         callback3 = tf.keras.callbacks.EarlyStopping(monitor='val_output_d1_accuracy', min_delta=0.0001, patience=10, restore_best_weights=True)
         callbackTensor = tf.keras.callbacks.TensorBoard(tmp_dir+"/"+modelName+"/tensorboard_logs")
-        X_train, X_test, y_dim1_train, y_dim1_test, y_dim2_train, y_dim2_test = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
+        X_train, X_val, y_dim1_train, y_dim1_val, y_dim2_train, y_dim2_val = train_test_split(X, y_dim1, y_dim2, test_size=0.2)
         keras_tuner.GridSearch
         tuner = keras_tuner.BayesianOptimization(
             build_model,
@@ -101,7 +102,7 @@ class M8Trainer(BaseTrainer):
             seed=random_seed
         )
 
-        tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=1000, validation_data=(X_test, [y_dim1_test, y_dim2_test]), 
+        tuner.search(X_train, [y_dim1_train, y_dim2_train], epochs=1000, validation_data=(X_val, [y_dim1_val, y_dim2_val]), 
                         verbose=2,
                         batch_size=batch_size,
                         callbacks=[callback1, callback2, callback3, callbackTensor])
@@ -109,7 +110,7 @@ class M8Trainer(BaseTrainer):
         # Devolvemos el modelo entrenado
         model = tuner.get_best_models()[0]
         model.build(input_shape=(inputlength,))
-        score = model.evaluate(X_test, [y_dim1_test, y_dim2_test], verbose=0)
+        score = model.evaluate(X_val, [y_dim1_val, y_dim2_val], verbose=0)
 
         # Imprimimos la mejor configuración
         best_hps = tuner.get_best_hyperparameters()[0]
@@ -124,6 +125,7 @@ class M8Trainer(BaseTrainer):
 
         #Cargamos los datos de entrenamiento
         input_data, output_data = M8.load_testing_data(dataset_path, scaler_file)
+        output_data = output_data.to_numpy()
 
         #Cargamos el modelo
         model = tf.keras.models.load_model(model_file)
@@ -137,6 +139,21 @@ class M8Trainer(BaseTrainer):
         # Convertimos a posiciones
         predictions_positions = gridList_to_posXY(predictions, cell_amount_x=cell_amount_x**2, cell_amount_y=cell_amount_y**2)
 
+        # Evaluación
+        output_data_grid_dim1 = posXYlist_to_grid(output_data, cell_amount_x, cell_amount_y)
+        output_data_grid_dim2 = posXYlist_to_grid(output_data, cell_amount_x**2, cell_amount_y**2)
+        output_data_categorical_dim1 = tf.keras.utils.to_categorical(output_data_grid_dim1, num_classes=cell_amount_x*cell_amount_y)
+        output_data_categorical_dim2 = tf.keras.utils.to_categorical(output_data_grid_dim2, num_classes=(cell_amount_x**2)*(cell_amount_y**2))
+
+        #accuracy = accuracy_score(output_data_grid_dim2, predictions)
+        metrics = model.evaluate(input_data, [output_data_categorical_dim1, output_data_categorical_dim2], verbose=0)
+        formated_metrics = {
+            'loss_mse': metrics[0],
+            'loss_d1': metrics[1],
+            'loss_d2': metrics[2],
+            'accuracy_d1': metrics[3],
+            'accuracy_d2': metrics[4]
+        }
+
         #Devolvemos las predicciones y los datos de salida esperados
-        output_data = output_data.to_numpy()
-        return predictions_positions, output_data
+        return predictions_positions, output_data, formated_metrics

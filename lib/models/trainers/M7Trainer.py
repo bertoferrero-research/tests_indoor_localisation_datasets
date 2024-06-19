@@ -60,11 +60,13 @@ class M7Trainer(BaseTrainer):
             predictions, cell_amount_x, cell_amount_y)
         
         # Evaluación
-        accuracy = accuracy_score(output_data, predictions_positions)
-        metrics = model.evaluate(input_data, output_data, verbose=0)
+        output_data_grid = posXYlist_to_grid(output_data, cell_amount_x, cell_amount_y)
+        output_data_categorical = tf.keras.utils.to_categorical(output_data_grid, num_classes=cell_amount_x*cell_amount_y)
+        #accuracy = accuracy_score(output_data_grid, predictions)
+        metrics = model.evaluate(input_data, output_data_categorical, verbose=0)
         formated_metrics = {
             'loss_mse': metrics[1],
-            'accuracy': accuracy
+            'accuracy': metrics[2]
         }
 
         #Devolvemos las predicciones y los datos de salida esperados
