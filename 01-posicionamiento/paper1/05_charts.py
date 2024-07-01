@@ -78,8 +78,7 @@ for dataset in datasets:
     ax.set_ylim([0, max_dataset_value+2.5])
     plt.xlabel('Models')
     plt.ylabel('Euclidian distance error (m)')
-    plt.title(dataset['public_name'] +
-              ' - Positioning error distribution')
+    plt.title('Testing results - '+dataset['public_name'])
     
     plt.savefig(os.path.join(output_dir, dataset['name']+'-boxplot.png'))
     plt.savefig(os.path.join(output_dir, dataset['name']+'-boxplot.eps'))
