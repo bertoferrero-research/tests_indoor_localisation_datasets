@@ -56,12 +56,8 @@ class M8(ModelsBaseClass):
             dimension_dropout = layer['dropout']
 
             # Añadimos capa
-            if(layer_number == 1):
-                hiddenLayers = tf.keras.layers.Dense(
-                    dimension_units, activation='relu', name='dense_'+str(dimension_number)+'.'+str(layer_number))(output_d1)
-            else:
-                hiddenLayers = tf.keras.layers.Dense(
-                    dimension_units, activation='relu', name='dense_'+str(dimension_number)+'.'+str(layer_number))(hiddenLayers)
+            hiddenLayers = tf.keras.layers.Dense(
+                dimension_units, activation='relu', name='dense_'+str(dimension_number)+'.'+str(layer_number))(hiddenLayers)
             hiddenLayers = tf.keras.layers.Dropout(
                 dimension_dropout)(hiddenLayers)
 
