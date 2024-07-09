@@ -17,6 +17,8 @@ class M8Trainer(BaseTrainer):
         cell_amount_x = 3
         cell_amount_y = 3
         max_trials = 100
+        if not designing:
+            max_trials = 1
 
         #Cargamos los datos de entrenamiento
         X, y = M8.load_traning_data(dataset_path, scaler_file)
@@ -40,7 +42,7 @@ class M8Trainer(BaseTrainer):
             #Definimos los hipermodelos y construimos el modelo en si
             loss = 'categorical_crossentropy'
             activation = 'softmax'
-            inputdropout = hp.Float('input_dropout', min_value=0.0, max_value=0.5, step=0.1)
+            inputdropout = 0# hp.Float('input_dropout', min_value=0.0, max_value=0.5, step=0.1)
             dimension1 = []
             dimension2 = []
             if designing:
@@ -63,19 +65,21 @@ class M8Trainer(BaseTrainer):
 
             else:
                 d1units = [512, 512, 512, 64, 256, 2048, 128, 256]
+                d1drops = [0.4, 0, 0, 0, 0, 0.4, 0, 0.1]
                 for i in range(len(d1units)):
-                    dimension1.append(
+                    dimension1.append( 
                         {
                             'units': d1units[i], 
-                            'dropout': hp.Float('dropout_dimension1_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
+                            'dropout': d1drops[i]
                         })
                 
                 d2units = [32, 128, 128, 64]
+                d2drops = [0, 0, 0, 0]
                 for i in range(len(d2units)):
                     dimension2.append(
                         {
                             'units': d2units[i], 
-                            'dropout': hp.Float('dropout_dimension2_'+str(i), min_value=0.0, max_value=0.5, step=0.1)
+                            'dropout': d2drops[i]
                         })
                 loss_weight_d1 = 0.2
                 learning_rate = 0.0001            

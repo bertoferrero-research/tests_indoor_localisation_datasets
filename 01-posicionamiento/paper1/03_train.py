@@ -42,7 +42,7 @@ datasets = [
 # Configuración del entrenamiento
 batch_size = 256
 max_trials = 50
-overwrite = False
+overwrite = True
 tuner = 'bayesian'
 
 # Configuración general
