@@ -2,6 +2,7 @@ from lib.models import M2
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from abc import ABC, abstractmethod
+import autokeras as ak
 
 class BaseTrainer(ABC):
     @abstractmethod
@@ -11,6 +12,14 @@ class BaseTrainer(ABC):
     @abstractmethod
     def prediction(dataset_path: str, model_file: str, scaler_file: str):
         pass
+  
+    @abstractmethod
+    def get_training_data(dataset_path: str, scaler_file: str):
+        pass
+    
+    @staticmethod
+    def get_model_instance(model_file: str):
+        return tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
     
     @staticmethod
     def fit_autokeras(model, X, y, designing, batch_size, callbacks = None, test_size:float=0.2):

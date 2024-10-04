@@ -39,6 +39,11 @@ class M7Trainer(BaseTrainer):
         model = model.export_model()
 
         return model, score
+    
+    @staticmethod
+    def get_training_data(dataset_path: str, scaler_file: str):
+        input_data, output_data = M7.load_testing_data(dataset_path, scaler_file)
+        return input_data, output_data
 
     @staticmethod
     def prediction(dataset_path: str, model_file: str, scaler_file: str):
@@ -46,11 +51,11 @@ class M7Trainer(BaseTrainer):
         cell_amount_y = 6
 
         #Cargamos los datos de entrenamiento
-        input_data, output_data = M7.load_testing_data(dataset_path, scaler_file)
+        input_data, output_data = M7Trainer.get_training_data(dataset_path, scaler_file)
         output_data = output_data.to_numpy()
 
         #Cargamos el modelo
-        model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+        model = BaseTrainer.get_model_instance(model_file)
 
         #Predecimos
         predictions = model.predict(input_data)

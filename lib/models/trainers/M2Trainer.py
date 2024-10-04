@@ -28,16 +28,21 @@ class M2Trainer(BaseTrainer):
         # Devolvemos el modelo entrenado
         model = model.export_model()
 
-        return model, score
+        return model, score    
+    
+    @staticmethod
+    def get_training_data(dataset_path: str, scaler_file: str):
+        input_data, output_data = M2.load_testing_data(dataset_path, scaler_file)
+        return input_data, output_data
 
     @staticmethod
     def prediction(dataset_path: str, model_file: str, scaler_file: str):
         #Cargamos los datos de entrenamiento
-        input_data, output_data = M2.load_testing_data(dataset_path, scaler_file)
+        input_data, output_data = M2Trainer.get_training_data(dataset_path, scaler_file)
         output_data = output_data.to_numpy()
 
         #Cargamos el modelo
-        model = tf.keras.models.load_model(model_file, custom_objects=ak.CUSTOM_OBJECTS)
+        model = BaseTrainer.get_model_instance(model_file)
 
         #Evaluamos
         metrics = model.evaluate(input_data, output_data, verbose=0)
